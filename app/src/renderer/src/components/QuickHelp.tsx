@@ -13,7 +13,7 @@ export function QuickHelp(): JSX.Element {
   const go = (id: string): void => bodyRef.current?.querySelector(`#help-${id}`)?.scrollIntoView({ behavior: 'smooth' })
 
   return (
-    <Modal title={t('help.title')} onClose={() => setModal(null)} size="large">
+    <Modal title={`${t('help.title')} — Terminal 2 v${__APP_VERSION__}`} onClose={() => setModal(null)} size="large">
       <div className="help-layout">
         <nav className="help-toc">
           {TOC.map((id) => (

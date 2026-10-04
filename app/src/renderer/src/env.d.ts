@@ -19,6 +19,9 @@ interface FileFilter {
 }
 
 declare global {
+  /** package.json 버전 (electron.vite.config.ts define) */
+  const __APP_VERSION__: string
+
   // React 19 no longer exposes the global JSX namespace; keep `JSX.Element` return types working.
   namespace JSX {
     type Element = ReactJSX.Element

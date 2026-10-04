@@ -1,6 +1,6 @@
 {
   "name": "terminal2",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "main": "./out/main/index.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "dist": "electron-vite build && electron-builder --win dir && node scripts/finalize-dist.mjs"
+    "dist": "electron-vite build && electron-builder --win dir && node scripts/finalize-dist.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "serialport": "^13.0.0"
@@ -26,6 +27,7 @@
     "react-dom": "^19.3.0",
     "typescript": "^7.0.2",
     "vite": "^7.3.6",
+    "vitest": "^5.0.3",
     "zustand": "^5.0.15"
   },
   "description": "Terminal 2 serial terminal (Electron)"
