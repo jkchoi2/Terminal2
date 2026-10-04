@@ -69,6 +69,13 @@ function registerIpc(): void {
 
   ipcMain.handle(IPC.fileWrite, (_e, path: string, content: string) => writeFile(path, content, 'utf8'))
 
+  ipcMain.handle(IPC.filePick, async (e, defaultPath?: string) => {
+    const win = BrowserWindow.fromWebContents(e.sender)!
+    const r = await dialog.showOpenDialog(win, { properties: ['openFile'], defaultPath })
+    return r.canceled || r.filePaths.length === 0 ? null : r.filePaths[0]
+  })
+  ipcMain.handle(IPC.fileReadBytes, async (_e, path: string) => new Uint8Array(await readFile(path)))
+
   ipcMain.handle(IPC.baseDir, () => baseDir())
   ipcMain.handle(IPC.instance, () => instance)
 

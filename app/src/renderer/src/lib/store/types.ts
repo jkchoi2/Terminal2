@@ -7,6 +7,7 @@ import type { TextEncoding } from '../encoding'
 import type { Lang } from '../i18n'
 import type { FileLink } from '../files'
 import type { ChartConfig } from '../chartTypes'
+import type { FileSendSpec } from '../fileSend'
 
 export type RxMode = 'ascii' | 'hex' | 'both'
 
@@ -28,7 +29,7 @@ export interface Lines {
   rts: boolean
 }
 
-export type ModalKind = null | 'macros' | 'rr' | 'help'
+export type ModalKind = null | 'macros' | 'rr' | 'help' | 'fileSend'
 
 /** Everything stored in Config-Terminal2.json. */
 export interface Snapshot {
@@ -68,6 +69,8 @@ export interface Snapshot {
   logEnabled: boolean
   /** 이 기간(일)이 지난 로그 파일은 자동 삭제 (0 = 지우지 않음) */
   logRetentionDays: number
+  /** 파일 전송 설정 */
+  fileSend: FileSendSpec
 }
 
 /** 연결 (connSlice) */
@@ -144,7 +147,16 @@ export interface UiState {
   sendChartSample: (bytes: Uint8Array, open?: boolean) => void
 }
 
-export type State = Snapshot & ConnState & MacroState & UiState
+/** 파일 전송 (fileSendSlice) */
+export interface FileSendState {
+  /** 전송 중이면 진행 상황 */
+  fileJob: { name: string; i: number; n: number } | null
+  setFileSend: (patch: Partial<FileSendSpec>) => void
+  startFileSend: (items: Uint8Array[], name: string) => Promise<void>
+  stopFileSend: () => void
+}
+
+export type State = Snapshot & ConnState & MacroState & UiState & FileSendState
 
 export type SetState = StoreApi<State>['setState']
 export type GetState = StoreApi<State>['getState']

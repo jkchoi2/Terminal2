@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { createConnSlice } from './connSlice'
 import { createMacroSlice } from './macroSlice'
 import { createUiSlice } from './uiSlice'
+import { createFileSendSlice } from './fileSendSlice'
 import { bindLogQueue } from './logQueue'
 import { initialSnapshot, startApp } from './persist'
 import type { State } from './types'
@@ -11,7 +12,8 @@ export const useStore = create<State>((set, get) => ({
   ...initialSnapshot(),
   ...createConnSlice(set, get),
   ...createMacroSlice(set, get),
-  ...createUiSlice(set, get)
+  ...createUiSlice(set, get),
+  ...createFileSendSlice(set, get)
 }))
 
 bindLogQueue(useStore.setState)

@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.invoke(IPC.fileSave, defaultPath, content, filters),
   openFile: (filters: unknown, defaultPath?: string) => ipcRenderer.invoke(IPC.fileOpen, filters, defaultPath),
   writeFile: (path: string, content: string) => ipcRenderer.invoke(IPC.fileWrite, path, content),
+  pickFile: (defaultPath?: string) => ipcRenderer.invoke(IPC.filePick, defaultPath),
+  readBytes: (path: string) => ipcRenderer.invoke(IPC.fileReadBytes, path),
   baseDir: () => ipcRenderer.invoke(IPC.baseDir),
   instance: () => ipcRenderer.invoke(IPC.instance),
   backup: (kind: string, content: string) => ipcRenderer.invoke(IPC.backup, kind, content),

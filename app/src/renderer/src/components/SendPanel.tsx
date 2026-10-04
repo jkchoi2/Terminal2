@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '@/lib/store'
 import { buildPayload, toHex } from '@/lib/hex'
 import { t } from '@/lib/i18n'
@@ -8,6 +9,8 @@ export function SendPanel(): JSX.Element {
   const sendText = useStore((s) => s.sendText)
   const connected = useStore((s) => s.connected)
   const encoding = useStore((s) => s.encoding)
+  const fileJob = useStore((s) => s.fileJob)
+  const { setModal, stopFileSend } = useStore(useShallow((s) => ({ setModal: s.setModal, stopFileSend: s.stopFileSend })))
   const [mode, setMode] = useState<DataMode>('ascii')
   const [text, setText] = useState('TEST1234')
   const [cr, setCr] = useState(false)
@@ -78,9 +81,20 @@ export function SendPanel(): JSX.Element {
         <button className="primary" onClick={send} disabled={invalid || !connected}>
           {t('send.send')} ⏎
         </button>
+        <button onClick={() => setModal('fileSend')} disabled={!!fileJob} title={t('fsend.buttonTip')}>
+          {t('fsend.button')}
+        </button>
       </div>
       <div className={`send-preview ${invalid || err ? 'error' : ''}`}>
-        {preview.error ?? err ?? (
+        {fileJob ? (
+          <span className="file-progress">
+            <progress max={fileJob.n} value={fileJob.i} />
+            {t('fsend.progress', { i: fileJob.i.toLocaleString(), n: fileJob.n.toLocaleString(), name: fileJob.name })}
+            <button className="danger small" onClick={stopFileSend}>
+              {t('fsend.stop')}
+            </button>
+          </span>
+        ) : preview.error ?? err ?? (
           <>
             <span className="muted">{preview.bytes.length} bytes →</span> {toHex(preview.bytes)}
           </>

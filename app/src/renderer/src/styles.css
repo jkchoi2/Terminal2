@@ -737,6 +737,59 @@ body.resizing {
   color: var(--err);
 }
 
+/* 파일 전송: 진행 표시 (송신창 아래 줄)와 설정 창 */
+.file-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-progress progress {
+  width: 160px;
+  height: 8px;
+  accent-color: var(--accent);
+}
+.file-progress button.small {
+  padding: 0 8px;
+  font-size: 11px;
+}
+.fsend-grid {
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+}
+.fsend-grid .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fsend-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fsend-preview {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--log-bg);
+  min-height: 80px;
+}
+.fsend-preview p {
+  margin: 0 0 4px;
+}
+.fsend-preview ol {
+  margin: 0;
+  padding-left: 28px;
+  font-size: 12px;
+}
+.fsend-preview li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---------- status bar ---------- */
 .status-bar {
   display: flex;

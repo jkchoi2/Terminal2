@@ -3,6 +3,7 @@ import type { StoreApi } from 'zustand'
 import { DEFAULT_FRAME } from '../../../../shared/frame'
 import { DEFAULT_NET } from '../../../../shared/transport'
 import { defaultCharts } from '../chartDefaults'
+import { DEFAULT_FILE_SEND } from '../fileSend'
 import { setEncoding } from '../encoding'
 import { setLang, t } from '../i18n'
 import { wireChart } from './chart'
@@ -45,7 +46,8 @@ export function initialSnapshot(): Snapshot {
     chartWindow: null,
     chartsFile: null,
     logEnabled: false,
-    logRetentionDays: 30
+    logRetentionDays: 30,
+    fileSend: DEFAULT_FILE_SEND
   }
 }
 

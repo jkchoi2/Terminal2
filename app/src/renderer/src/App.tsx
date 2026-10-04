@@ -11,6 +11,7 @@ import { StatusBar } from './components/StatusBar'
 import { MacroEditor } from './components/MacroEditor'
 import { RequestResponseEditor } from './components/RequestResponseEditor'
 import { QuickHelp } from './components/QuickHelp'
+import { FileSendDialog } from './components/FileSendDialog'
 import { t } from '@/lib/i18n'
 import { describeConn } from '@/lib/conn'
 import { CONN_LABEL } from '../../shared/transport'
@@ -75,6 +76,7 @@ export function App(): JSX.Element {
       {modal === 'macros' && <MacroEditor />}
       {modal === 'rr' && <RequestResponseEditor />}
       {modal === 'help' && <QuickHelp />}
+      {modal === 'fileSend' && <FileSendDialog />}
     </div>
   )
 }

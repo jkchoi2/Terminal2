@@ -4,6 +4,9 @@ export const IPC = {
   fileSave: 'file:save',
   fileOpen: 'file:open',
   fileWrite: 'file:write',
+  /** 파일 전송용: 아무 파일 고르기 (경로) / 바이트로 읽기 */
+  filePick: 'file:pick',
+  fileReadBytes: 'file:read-bytes',
   baseDir: 'app:baseDir',
   instance: 'app:instance',
   backup: 'backup:write',

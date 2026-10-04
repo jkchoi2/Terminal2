@@ -33,6 +33,9 @@ declare global {
       saveFile: (defaultPath: string, content: string, filters: FileFilter[]) => Promise<string | null>
       openFile: (filters: FileFilter[], defaultPath?: string) => Promise<{ path: string; content: string } | null>
       writeFile: (path: string, content: string) => Promise<void>
+      /** 아무 파일이나 고르기 (취소하면 null) */
+      pickFile: (defaultPath?: string) => Promise<string | null>
+      readBytes: (path: string) => Promise<Uint8Array>
       baseDir: () => Promise<string>
       /** 같은 폴더 exe 중 몇 번째 실행인지 (1부터) */
       instance: () => Promise<number>

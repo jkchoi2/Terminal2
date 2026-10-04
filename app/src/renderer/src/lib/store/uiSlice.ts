@@ -50,7 +50,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
         lastDir: s.lastDir, macroFile: s.macroFile, rrFile: s.rrFile,
         charts: s.charts, activeChartId: s.activeChartId, chartCollecting: s.chartCollecting,
         chartOnTop: s.chartOnTop, chartWindow: s.chartWindow, chartsFile: s.chartsFile,
-        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays
+        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays, fileSend: s.fileSend
       }
     },
 
@@ -69,6 +69,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
         recentEndpoints: { ...s.recentEndpoints, ...snap.recentEndpoints },
         rx: { ...s.rx, ...snap.rx },
         frame: { ...s.frame, ...snap.frame },
+        fileSend: { ...s.fileSend, ...snap.fileSend },
         macros: macros ?? s.macros,
         rules: rules ?? s.rules,
         lines: { ...s.lines, dtr: snap.dtr ?? s.dtr, rts: snap.rts ?? s.rts },

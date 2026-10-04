@@ -160,6 +160,11 @@ XOR8, range 2 ~ -1  ->  D0 ^ 00 = D0   ->  02 05 D0 00 D0`}</pre>
           10MB). Grey dot = off, red ring = starts when connected, red dot = writing. <b>▾</b> shows the current file, the retention
           period (older files are deleted) and opens the log folder.
         </p>
+        <p>
+          <b>File…</b> in the send bar sends a file <b>line by line</b> (line ending none/CR/LF/CRLF; each line as is or as HEX
+          text), <b>all at once</b>, or in <b>N-byte chunks</b>, with an interval in ms. The preview shows the number of pieces; while
+          sending, progress and a <b>Stop</b> button appear under the send bar. Sending stops if the connection drops.
+        </p>
       </Section>
 
       <Section id="example" title="13. Walkthrough: 02 05 D0 00 D0">
