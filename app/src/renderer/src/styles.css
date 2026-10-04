@@ -1451,6 +1451,21 @@ body.resizing-x {
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.help h4 {
+  margin: 12px 0 4px;
+  font-size: 13px;
+  color: var(--accent);
+}
+/* 도움말에서 파일 전송 미리보기의 제어 바이트 배지 모양 예시 */
+.ctrl-sample {
+  background: var(--accent-2);
+  color: #fff;
+  border-radius: 3px;
+  font: 10px var(--mono);
+  padding: 0 3px;
 }
 .help ol,
 .help ul {

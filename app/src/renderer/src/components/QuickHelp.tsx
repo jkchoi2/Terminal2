@@ -5,7 +5,10 @@ import { getLang, t } from '@/lib/i18n'
 import { HelpKo } from './help/HelpKo'
 import { HelpEn } from './help/HelpEn'
 
-const TOC = ['layout', 'connect', 'frame', 'receive', 'input', 'macro', 'checksum', 'rr', 'pattern', 'regex', 'chart', 'files', 'example', 'keys', 'pins'] as const
+const TOC = [
+  'layout', 'connect', 'network', 'windows', 'frame', 'receive', 'input', 'macro', 'checksum', 'rr', 'pattern', 'regex',
+  'chart', 'log', 'filesend', 'files', 'example', 'keys', 'pins'
+] as const
 
 export function QuickHelp(): JSX.Element {
   const setModal = useStore((s) => s.setModal)
