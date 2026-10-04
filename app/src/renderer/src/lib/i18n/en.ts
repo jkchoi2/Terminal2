@@ -169,7 +169,7 @@ export const en: Record<MsgKey, string> = {
 
   'file.discard': "Don't save",
   'file.modified': 'modified',
-  'file.noLink': '(no file — kept in Config-Terminal2.json only)',
+  'file.noLink': '(no file — kept in configTerminal.json only)',
   'file.noLinkTip': 'No linked file: Save asks for a file name',
   'file.save': 'Save',
   'file.saveAs': 'Save as…',
@@ -257,7 +257,7 @@ export const en: Record<MsgKey, string> = {
   'log.clientLeave': 'Client disconnected: {peer} ({n} now)',
   'log.closed': '{port} closed',
   'log.closedReason': '{port} closed: {reason}',
-  'log.configSaveError': 'Could not save Config-Terminal2.json: {msg}',
+  'log.configSaveError': 'Could not save configTerminal.json: {msg}',
   'log.connError': 'Connection error: {msg}',
   'log.fileDone': 'File sent: {name} ({n} pieces)',
   'log.fileRepeat': '— repeat {rounds} times',
@@ -386,7 +386,9 @@ export const en: Record<MsgKey, string> = {
   'rx.title': 'Receive',
 
   'send.asciiPlaceholder': 'TEST1234   (control chars: <CR> <LF> <STX>)',
+  'send.crTip': 'When checked, CR (0D) is appended',
   'send.fileMenu': 'Send file…',
+  'send.lfTip': 'When checked, LF (0A) is appended',
   'send.moreTip': 'More ways to send (file)',
   'send.send': 'Send',
   'send.title': 'Send',

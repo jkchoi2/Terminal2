@@ -10,12 +10,12 @@ export function HelpEn(): JSX.Element {
             ['Top', 'Port settings, Connect/Disconnect, signal lines (CTS/DSR/CD in, DTR/RTS out), Help, Quit'],
             ['Receive', 'Traffic log: ASCII / HEX / HEX+ASCII, Time, Len, packet framing, find, copy'],
             ['Macros', 'Send stored messages with one click. Drag the border above to resize'],
-            ['Send', 'Type and send one line (ASCII/HEX, +CR/+LF). ↑/↓ for history'],
+            ['Send', 'Type and send one line (ASCII/HEX, CR/LF appended when checked). ↑/↓ for history'],
             ['Status bar', 'Connection, settings summary, Rx/Tx counters with activity LEDs, Config path, encoding, language, theme']
           ]}
         />
         <p>
-          All settings, macros and R/R rules are saved to <code>Config-Terminal2.json</code> next to the executable as soon as they change
+          All settings, macros and R/R rules are saved to <code>configTerminal.json</code> next to the executable as soon as they change
           and are loaded on start. If that folder is read-only, the user data folder is used (shown in the status bar).
         </p>
       </Section>
@@ -43,13 +43,13 @@ export function HelpEn(): JSX.Element {
         <p>
           The ▾ next to an address lists recently used addresses (20 per type). When you run several copies, say one server and one
           client, the title bar shows the connection type and address and the Connect button is colored per type. The second copy shows
-          <code>#2</code> in its title and keeps its settings in <code>Config-Terminal2-2.json</code> (copied from the first one at
+          <code>#2</code> in its title and keeps its settings in <code>configTerminal-2.json</code> (copied from the first one at
           first start).
         </p>
         <p>
           To always start with the same settings regardless of launch order, use a <b>profile</b>: set things up, then ▾ next to
           Connect → <b>Desktop shortcut with these settings…</b> and enter a name (e.g. server). The settings are saved to{' '}
-          <code>Config-Terminal2-server.json</code> and a desktop shortcut <code>Terminal2 - server</code> (
+          <code>configTerminal-server.json</code> and a desktop shortcut <code>Terminal2 - server</code> (
           <code>Terminal2.exe --profile=server</code>) is created. Windows started from it show <code>[server]</code> in the title.
         </p>
       </Section>

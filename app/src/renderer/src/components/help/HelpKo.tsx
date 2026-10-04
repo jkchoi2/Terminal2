@@ -10,12 +10,12 @@ export function HelpKo(): JSX.Element {
             ['상단', '통신 설정, Connect/Disconnect, 신호선(CTS/DSR/CD 표시, DTR/RTS 출력), 도움말, 종료'],
             ['수신창', '송수신 로그. 표시 형식(ASCII / HEX / HEX+ASCII), Time, Len, 프레임 설정, 찾기, 복사'],
             ['매크로', '등록한 메시지를 버튼 한 번으로 전송. 경계선을 드래그해서 높이 조절'],
-            ['송신창', '한 줄 메시지 직접 전송(ASCII/HEX, +CR/+LF). ↑/↓로 이전 입력'],
+            ['송신창', '한 줄 메시지 직접 전송(ASCII/HEX, CR/LF 체크 시 끝에 붙임). ↑/↓로 이전 입력'],
             ['상태바', '연결 상태, 설정 요약, Rx/Tx 바이트 수와 활동 표시등, Config 위치, 인코딩, 언어, 테마']
           ]}
         />
         <p>
-          모든 설정·매크로·R/R 규칙은 바뀌는 즉시 실행파일 폴더의 <code>Config-Terminal2.json</code>에 저장되고, 다음 실행 때
+          모든 설정·매크로·R/R 규칙은 바뀌는 즉시 실행파일 폴더의 <code>configTerminal.json</code>에 저장되고, 다음 실행 때
           자동으로 불러옵니다. 폴더에 쓰기 권한이 없으면 사용자 폴더에 저장하고 상태바에 위치를 표시합니다.
         </p>
       </Section>
@@ -44,13 +44,13 @@ export function HelpKo(): JSX.Element {
         <p>
           주소 입력칸의 ▾에서 최근에 연결한 주소(방식별 20개)를 고를 수 있습니다. 실행파일을 여러 개 띄워 하나는 Server, 하나는
           Client로 쓸 때 헷갈리지 않도록 타이틀바에 연결 방식과 주소가, Connect 버튼이 방식별 색으로 표시됩니다. 두 번째로 실행한
-          창은 타이틀에 <code>#2</code>가 붙고 설정을 <code>Config-Terminal2-2.json</code>에 따로 저장합니다(처음에는 첫 번째
+          창은 타이틀에 <code>#2</code>가 붙고 설정을 <code>configTerminal-2.json</code>에 따로 저장합니다(처음에는 첫 번째
           설정을 복사해서 시작).
         </p>
         <p>
           실행 순서와 상관없이 늘 같은 설정으로 띄우려면 <b>프로필</b>을 씁니다. 원하는 설정을 맞춘 뒤 Connect 오른쪽 ▾ →
           <b>현재 설정으로 바탕화면 바로가기 만들기…</b>에서 이름(예: server)을 정하면, 설정이{' '}
-          <code>Config-Terminal2-server.json</code>으로 저장되고 바탕화면에 <code>Terminal2 - server</code> 바로가기(
+          <code>configTerminal-server.json</code>으로 저장되고 바탕화면에 <code>Terminal2 - server</code> 바로가기(
           <code>Terminal2.exe --profile=server</code>)가 생깁니다. 바로가기로 실행한 창은 타이틀에 <code>[server]</code>가 붙습니다.
         </p>
       </Section>

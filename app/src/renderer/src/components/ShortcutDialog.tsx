@@ -63,7 +63,7 @@ export function ShortcutDialog(): JSX.Element {
         <span className="hint mono">
           Terminal2 - {clean || '…'}.lnk → Terminal2.exe --profile={clean || '…'}
           <br />
-          Config-Terminal2-{clean || '…'}.json
+          configTerminal-{clean || '…'}.json
         </span>
       </div>
       {msg && <p className={`hint${msg.ok ? '' : ' error'}`}>{msg.text}</p>}

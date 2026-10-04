@@ -18,7 +18,7 @@ const conn = new ConnectionManager(() => mainWindow?.webContents)
 const fileLog = new FileLogger(() => mainWindow?.webContents)
 /** 같은 폴더의 exe 중 몇 번째 실행인지 (타이틀바 표시, 설정 파일 이름) */
 let instance = 1
-/** --profile=<이름>으로 실행했으면 그 이름 (설정 파일 Config-Terminal2-<이름>.json) */
+/** --profile=<이름>으로 실행했으면 그 이름 (설정 파일 configTerminal-<이름>.json) */
 let profile = ''
 
 function createWindow(): void {

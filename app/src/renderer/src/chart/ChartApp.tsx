@@ -109,7 +109,7 @@ export function ChartApp(): JSX.Element {
   const chartsRef = useRef<ChartConfig[]>([])
   chartsRef.current = charts
 
-  /** Saves the chart list in the main window (Config-Terminal2.json). */
+  /** Saves the chart list in the main window (configTerminal.json). */
   const commit = useCallback(
     (next: ChartConfig[], nextActive: number, file: FileLink | null = chartsFile): void => {
       setCharts(next)

@@ -1,4 +1,4 @@
-// 설정 기본값, Config-Terminal2.json 저장/불러오기, 앱 시작
+// 설정 기본값, configTerminal.json 저장/불러오기, 앱 시작
 import type { StoreApi } from 'zustand'
 import { DEFAULT_FRAME } from '../../../../shared/frame'
 import { DEFAULT_NET } from '../../../../shared/transport'
@@ -51,7 +51,7 @@ export function initialSnapshot(): Snapshot {
   }
 }
 
-/** 지금 설정 전체 (Config-Terminal2.json 형식) */
+/** 지금 설정 전체 (configTerminal.json 형식) */
 export function currentConfigJson(): string {
   return store ? JSON.stringify({ version: CONFIG_VERSION, ...store.getState().snapshot() }, null, 2) : ''
 }
@@ -72,7 +72,7 @@ export async function saveNow(): Promise<void> {
   }
 }
 
-/** Loads Config-Terminal2.json, keeps it saved on every change, and wires connection events. */
+/** Loads configTerminal.json, keeps it saved on every change, and wires connection events. */
 export async function startApp(api: StoreApi<State>): Promise<void> {
   store = api
   try {

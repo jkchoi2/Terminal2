@@ -40,8 +40,8 @@ Windows용 시리얼 / TCP / UDP 터미널입니다. 예전 Win32 프로그램 "
 
 | 파일 / 폴더 | 내용 |
 |---|---|
-| `Config-Terminal2.json` | 모든 설정, 매크로, R/R 규칙 (바뀌면 바로 저장) |
-| `Config-Terminal2-2.json`, `Config-Terminal2-<프로필>.json` | 두 번째로 실행한 창, 프로필별 설정 |
+| `configTerminal.json` | 모든 설정, 매크로, R/R 규칙 (바뀌면 바로 저장) |
+| `configTerminal-2.json`, `configTerminal-<프로필>.json` | 두 번째로 실행한 창, 프로필별 설정 |
 | `Log\Serial\`, `Log\TcpClient\`, `Log\TcpServer\`, `Log\Udp\` | 파일 로그 (`날짜_시각_대상.log`) |
 | `backup\` | 매크로/R/R/차트 목록을 불러오기 직전에 자동 보관한 사본 |
 
@@ -57,7 +57,7 @@ npm install
 npm run dev        # 개발 실행
 npm run typecheck  # 타입 검사
 npm run test       # 단위 테스트 (vitest)
-npm run dist       # app/dist/Terminal2/ 폴더 빌드 (기존 Config-Terminal2*.json은 유지)
+npm run dist       # app/dist/Terminal2/ 폴더 빌드 (기존 configTerminal*.json은 유지)
 ```
 
 VS Code 터미널에서 실행이 안 되면 환경 변수 `ELECTRON_RUN_AS_NODE`를 지운 뒤 다시 실행합니다.

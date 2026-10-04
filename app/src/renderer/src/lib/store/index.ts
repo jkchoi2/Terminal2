@@ -19,7 +19,7 @@ export const useStore = create<State>((set, get) => ({
 
 bindLogQueue(useStore.setState)
 
-/** Loads Config-Terminal2.json, keeps it saved on every change, and wires connection events. */
+/** Loads configTerminal.json, keeps it saved on every change, and wires connection events. */
 export const initApp = (): Promise<void> => startApp(useStore)
 
 export { BAUD_PRESETS, MACRO_PANE_2_ROWS, blankMacro, blankPacket, uid } from './defaults'

@@ -31,7 +31,7 @@ export interface Lines {
 
 export type ModalKind = null | 'macros' | 'rr' | 'help' | 'fileSend' | 'shortcut'
 
-/** Everything stored in Config-Terminal2.json. */
+/** Everything stored in configTerminal.json. */
 export interface Snapshot {
   /** 연결 방식 (Serial / TCP Client / TCP Server / UDP) */
   connKind: ConnKind

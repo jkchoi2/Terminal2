@@ -167,7 +167,7 @@ export const ko = {
 
   'file.discard': '저장 안 함',
   'file.modified': '수정됨',
-  'file.noLink': '(파일 없음 — Config-Terminal2.json에만 저장)',
+  'file.noLink': '(파일 없음 — configTerminal.json에만 저장)',
   'file.noLinkTip': '연결된 파일 없음: 저장을 누르면 파일 이름을 묻습니다',
   'file.save': '저장',
   'file.saveAs': '다른 이름으로…',
@@ -255,7 +255,7 @@ export const ko = {
   'log.clientLeave': '클라이언트 연결 끊김: {peer} (현재 {n}개)',
   'log.closed': '{port} 연결 해제',
   'log.closedReason': '{port} 닫힘: {reason}',
-  'log.configSaveError': 'Config-Terminal2.json 저장 실패: {msg}',
+  'log.configSaveError': 'configTerminal.json 저장 실패: {msg}',
   'log.connError': '연결 오류: {msg}',
   'log.fileDone': '파일 전송 완료: {name} ({n}개)',
   'log.fileRepeat': '— {rounds}회 반복',
@@ -384,7 +384,9 @@ export const ko = {
   'rx.title': '수신',
 
   'send.asciiPlaceholder': 'TEST1234   (제어문자: <CR> <LF> <STX>)',
+  'send.crTip': '체크하면 끝에 CR(0D)을 붙여 보냄',
   'send.fileMenu': '파일 전송…',
+  'send.lfTip': '체크하면 끝에 LF(0A)를 붙여 보냄',
   'send.moreTip': '다른 보내기 (파일 전송)',
   'send.send': '보내기',
   'send.title': '송신',

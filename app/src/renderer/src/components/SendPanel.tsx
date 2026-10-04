@@ -73,13 +73,13 @@ export function SendPanel(): JSX.Element {
           }}
           onKeyDown={onKeyDown}
         />
-        <label className="check">
+        <label className="check" title={t('send.crTip')}>
           <input type="checkbox" checked={cr} onChange={(e) => setCr(e.target.checked)} />
-          +CR
+          CR
         </label>
-        <label className="check">
+        <label className="check" title={t('send.lfTip')}>
           <input type="checkbox" checked={lf} onChange={(e) => setLf(e.target.checked)} />
-          +LF
+          LF
         </label>
         {/* 보내기 ⏎ | ▾ (파일 전송…) */}
         <div className="split-btn">
