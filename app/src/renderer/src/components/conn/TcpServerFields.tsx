@@ -39,16 +39,32 @@ export function TcpServerFields({ locked }: { locked: boolean }): JSX.Element {
   )
 }
 
-/** 접속한 클라이언트 수 (마우스를 올리면 목록) */
+/** 접속한 클라이언트 수와 송신 대상 선택 (전체 / 특정 클라이언트) */
 export function ServerPeers(): JSX.Element {
-  const { peers, connected } = useStore(useShallow((s) => ({ peers: s.peers, connected: s.connected })))
+  const { peers, connected, sendTarget } = useStore(
+    useShallow((s) => ({ peers: s.peers, connected: s.connected, sendTarget: s.sendTarget }))
+  )
+  const setSendTarget = useStore((s) => s.setSendTarget)
   return (
-    <div className="peers" title={peers.join('\n') || undefined}>
+    <div className="peers">
       <span className={`lamp ${peers.length ? 'on' : ''}`}>
         <i />
-        {t('conn.clients', { n: peers.length })}
+        {connected && !peers.length ? t('conn.waiting') : t('conn.clients', { n: peers.length })}
       </span>
-      <small>{connected ? (peers.length ? peers[peers.length - 1] : t('conn.waiting')) : ''}</small>
+      <select
+        className="peer-select"
+        value={sendTarget ?? ''}
+        disabled={!peers.length}
+        title={t('conn.sendTargetTip')}
+        onChange={(e) => setSendTarget(e.target.value || null)}
+      >
+        <option value="">{t('conn.sendAll', { n: peers.length })}</option>
+        {peers.map((p) => (
+          <option key={p} value={p}>
+            → {p}
+          </option>
+        ))}
+      </select>
     </div>
   )
 }

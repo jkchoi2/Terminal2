@@ -37,6 +37,7 @@ export function App(): JSX.Element {
   // Re-mount on language change so every t() call re-renders.
   const language = useStore((s) => s.language)
   const connKind = useStore((s) => s.connKind)
+  const macroCollapsed = useStore((s) => s.macroCollapsed)
   useWindowTitle()
 
   useEffect(() => {
@@ -67,7 +68,7 @@ export function App(): JSX.Element {
     <div className="app" key={language} data-conn={connKind}>
       <ConnectionBar />
       <ReceivePanel />
-      <Splitter />
+      {!macroCollapsed && <Splitter />}
       <MacroBar />
       <SendPanel />
       <StatusBar />

@@ -36,6 +36,8 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
       pushSys(t('log.noClients'))
       return false
     }
+    // TCP Server: 따로 지정하지 않으면 선택한 클라이언트(없으면 전체)에게 보낸다.
+    if (to === undefined && get().connKind === 'tcp-server') to = get().sendTarget ?? undefined
     try {
       await window.api.conn.write(bytes, to)
       logTx(bytes, to ? `${label ?? ''} → ${to}`.trim() : label)
@@ -64,7 +66,7 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
 
   const markClosed = (reason?: string): void => {
     get().stopAllMacros()
-    set((s) => ({ connected: false, peers: [], lines: { ...s.lines, cts: false, dsr: false, cd: false } }))
+    set((s) => ({ connected: false, peers: [], sendTarget: null, lines: { ...s.lines, cts: false, dsr: false, cd: false } }))
     if (reason) pushSys(reason)
   }
 
@@ -117,6 +119,7 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
   return {
     ports: [],
     peers: [],
+    sendTarget: null,
     interfaces: [],
     instance: 1,
     connected: false,
@@ -131,6 +134,7 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
       if (connKind !== 'serial') void get().loadInterfaces()
     },
     setNet: (patch) => set((s) => ({ net: { ...s.net, ...patch } })),
+    setSendTarget: (sendTarget) => set({ sendTarget }),
     loadInterfaces: async () => {
       try {
         set({ interfaces: await window.api.conn.interfaces() })
@@ -208,7 +212,8 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
           break
         case 'clientJoin':
         case 'clientLeave':
-          set({ peers: e.clients })
+          // 선택했던 클라이언트가 나가면 전체로 되돌린다.
+          set((s) => ({ peers: e.clients, sendTarget: s.sendTarget && e.clients.includes(s.sendTarget) ? s.sendTarget : null }))
           pushSys(t(e.type === 'clientJoin' ? 'log.clientJoin' : 'log.clientLeave', { peer: e.peer, n: e.clients.length }))
           break
         case 'signals':

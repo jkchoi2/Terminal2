@@ -19,14 +19,17 @@ function tooltip(m: Macro): string {
 }
 
 export function MacroBar(): JSX.Element {
-  const { macros, running, connected, macroPaneHeight } = useStore(useShallow((s) => ({ macros: s.macros, running: s.running, connected: s.connected, macroPaneHeight: s.macroPaneHeight })))
-  const { triggerMacro, stopAllMacros, setModal } = useStore(useShallow((s) => ({ triggerMacro: s.triggerMacro, stopAllMacros: s.stopAllMacros, setModal: s.setModal })))
+  const { macros, running, connected, macroPaneHeight, collapsed } = useStore(useShallow((s) => ({ macros: s.macros, running: s.running, connected: s.connected, macroPaneHeight: s.macroPaneHeight, collapsed: s.macroCollapsed })))
+  const { triggerMacro, stopAllMacros, setModal, toggleMacros } = useStore(useShallow((s) => ({ triggerMacro: s.triggerMacro, stopAllMacros: s.stopAllMacros, setModal: s.setModal, toggleMacros: s.toggleMacros })))
   const anyRunning = Object.values(running).some(Boolean)
   const visible = macros.filter((m) => m.enabled && m.data)
 
   return (
-    <section className="panel macros">
+    <section className={`panel macros${collapsed ? ' collapsed' : ''}`}>
       <div className="toolbar">
+        <button className="fold-btn" onClick={toggleMacros} title={collapsed ? t('macro.show') : t('macro.hide')}>
+          {collapsed ? '▸' : '▾'}
+        </button>
         <span className="panel-title">{t('macro.title')}</span>
         <button onClick={() => setModal('macros')}>{t('macro.edit')}</button>
         {anyRunning && (
@@ -35,25 +38,27 @@ export function MacroBar(): JSX.Element {
           </button>
         )}
         <div className="spacer" />
-        <span className="hint">{t('macro.barHint', { n: visible.length })}</span>
+        {!collapsed && <span className="hint">{t('macro.barHint', { n: visible.length })}</span>}
       </div>
-      <div className="macro-scroll" style={{ height: macroPaneHeight }}>
-        <div className="macro-grid">
-          {visible.map((m) => (
-            <button
-              key={m.id}
-              className={`macro-btn${running[m.id] ? ' running' : ''}${m.name.trim() ? '' : ' auto-name'}`}
-              title={tooltip(m)}
-              onClick={() => triggerMacro(m.id)}
-              data-offline={!connected || undefined}
-            >
-              {m.hotkey && <span className="key">{m.hotkey}</span>}
-              <span className="name">{macroLabel(m)}</span>
-              {m.intervalMs > 0 && <span className="cyc">⟳</span>}
-            </button>
-          ))}
+      {!collapsed && (
+        <div className="macro-scroll" style={{ height: macroPaneHeight }}>
+          <div className="macro-grid">
+            {visible.map((m) => (
+              <button
+                key={m.id}
+                className={`macro-btn${running[m.id] ? ' running' : ''}${m.name.trim() ? '' : ' auto-name'}`}
+                title={tooltip(m)}
+                onClick={() => triggerMacro(m.id)}
+                data-offline={!connected || undefined}
+              >
+                {m.hotkey && <span className="key">{m.hotkey}</span>}
+                <span className="name">{macroLabel(m)}</span>
+                {m.intervalMs > 0 && <span className="cyc">⟳</span>}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   )
 }

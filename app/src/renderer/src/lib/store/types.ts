@@ -46,6 +46,8 @@ export interface Snapshot {
   theme: 'dark' | 'light'
   recentBauds: number[]
   macroPaneHeight: number
+  /** 매크로 영역 숨김 */
+  macroCollapsed: boolean
   language: Lang
   encoding: TextEncoding
   dtr: boolean
@@ -69,6 +71,8 @@ export interface ConnState {
   ports: PortInfo[]
   /** TCP Server에 접속 중인 클라이언트 "IP:port" */
   peers: string[]
+  /** TCP Server 송신 대상 클라이언트 (null = 전체) */
+  sendTarget: string | null
   /** 이 PC의 IPv4 주소 (바인딩 주소 선택용) */
   interfaces: string[]
   /** 같은 폴더 exe 중 몇 번째 실행인지 */
@@ -80,6 +84,7 @@ export interface ConnState {
   setConfig: (patch: Partial<SerialConfig>) => void
   setConnKind: (k: ConnKind) => void
   setNet: (patch: Partial<NetConfig>) => void
+  setSendTarget: (peer: string | null) => void
   loadInterfaces: () => Promise<void>
   rememberBaud: (b: number) => void
   rescan: () => Promise<void>
@@ -119,6 +124,7 @@ export interface UiState {
   resetCounters: () => void
   setModal: (m: ModalKind) => void
   setMacroPaneHeight: (h: number) => void
+  toggleMacros: () => void
   toggleTheme: () => void
   setLanguage: (l: Lang) => void
   setTextEncoding: (e: TextEncoding) => void

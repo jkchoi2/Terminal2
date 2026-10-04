@@ -387,10 +387,11 @@ input[type='checkbox'] {
 .peers .lamp {
   width: auto;
 }
-.peers small {
+.peer-select {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--muted);
+  padding: 1px 4px;
+  width: 170px;
 }
 .lamps {
   display: flex;
@@ -679,6 +680,12 @@ input.warn {
   font-size: 9px;
   color: var(--muted);
 }
+/* 매크로 영역 접기/펴기 */
+.fold-btn {
+  padding: 0 6px;
+  min-width: 22px;
+  font-size: 12px;
+}
 .splitter {
   height: 6px;
   margin: -3px 0;
@@ -796,6 +803,15 @@ body.resizing {
   justify-content: space-between;
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
+}
+/* 제목줄을 끌어 창 안에서 옮길 수 있음 (Modal.tsx) */
+.modal-head {
+  cursor: move;
+  user-select: none;
+}
+body.dragging {
+  cursor: move;
+  user-select: none;
 }
 .modal-head h2 {
   margin: 0;

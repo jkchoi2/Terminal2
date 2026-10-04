@@ -29,6 +29,7 @@ export function initialSnapshot(): Snapshot {
     theme: 'dark',
     recentBauds: [],
     macroPaneHeight: MACRO_PANE_2_ROWS,
+    macroCollapsed: false,
     language: 'ko',
     encoding: 'euc-kr',
     dtr: false,

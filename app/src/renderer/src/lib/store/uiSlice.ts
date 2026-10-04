@@ -25,6 +25,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
     resetCounters: () => set({ rxCount: 0, txCount: 0 }),
     setModal: (modal) => set({ modal }),
     setMacroPaneHeight: (h) => set({ macroPaneHeight: Math.round(Math.min(480, Math.max(34, h))) }),
+    toggleMacros: () => set((s) => ({ macroCollapsed: !s.macroCollapsed })),
     toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
     setLanguage: (language) => {
       setLang(language)
@@ -40,7 +41,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
       return {
         connKind: s.connKind, net: s.net, recentEndpoints: s.recentEndpoints,
         config: s.config, rx: s.rx, frame: s.frame, macros: s.macros, rrEnabled: s.rrEnabled,
-        rules: s.rules, theme: s.theme, recentBauds: s.recentBauds, macroPaneHeight: s.macroPaneHeight,
+        rules: s.rules, theme: s.theme, recentBauds: s.recentBauds, macroPaneHeight: s.macroPaneHeight, macroCollapsed: s.macroCollapsed,
         language: s.language, encoding: s.encoding, dtr: s.dtr, rts: s.rts,
         lastDir: s.lastDir, macroFile: s.macroFile, rrFile: s.rrFile,
         charts: s.charts, activeChartId: s.activeChartId, chartCollecting: s.chartCollecting,
