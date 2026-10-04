@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '@/lib/store'
 import { buildPayload, toHex } from '@/lib/hex'
 import { t } from '@/lib/i18n'
 import type { DataMode } from '@/lib/types'
+import { ContextMenu } from './ContextMenu'
 
 export function SendPanel(): JSX.Element {
   const sendText = useStore((s) => s.sendText)
@@ -18,6 +19,8 @@ export function SendPanel(): JSX.Element {
   const [history, setHistory] = useState<string[]>([])
   const [histIdx, setHistIdx] = useState(-1)
   const [err, setErr] = useState<string>()
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
+  const arrowRef = useRef<HTMLButtonElement>(null)
 
   // encoding is a dependency because ASCII text is encoded with it.
   const preview = useMemo(() => buildPayload(mode, text, cr, lf), [mode, text, cr, lf, encoding])
@@ -78,18 +81,40 @@ export function SendPanel(): JSX.Element {
           <input type="checkbox" checked={lf} onChange={(e) => setLf(e.target.checked)} />
           +LF
         </label>
-        <button className="primary" onClick={send} disabled={invalid || !connected}>
-          {t('send.send')} ⏎
-        </button>
-        <button onClick={() => setModal('fileSend')} disabled={!!fileJob} title={t('fsend.buttonTip')}>
-          {t('fsend.button')}
-        </button>
+        {/* 보내기 ⏎ | ▾ (파일 전송…) */}
+        <div className="split-btn">
+          <button className="primary" onClick={send} disabled={invalid || !connected}>
+            {t('send.send')} ⏎
+          </button>
+          <button
+            ref={arrowRef}
+            className="primary split-arrow"
+            disabled={!!fileJob}
+            title={t('send.moreTip')}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() => {
+              const r = arrowRef.current?.getBoundingClientRect()
+              setMenu(menu || !r ? null : { x: r.left - 120, y: r.bottom + 2 })
+            }}
+          >
+            ▾
+          </button>
+        </div>
+        {menu && (
+          <ContextMenu
+            x={menu.x}
+            y={menu.y}
+            onClose={() => setMenu(null)}
+            items={[{ label: t('send.fileMenu'), onClick: () => setModal('fileSend') }]}
+          />
+        )}
       </div>
       <div className={`send-preview ${invalid || err ? 'error' : ''}`}>
         {fileJob ? (
           <span className="file-progress">
             <progress max={fileJob.n} value={fileJob.i} />
             {t('fsend.progress', { i: fileJob.i.toLocaleString(), n: fileJob.n.toLocaleString(), name: fileJob.name })}
+            {fileJob.rounds !== 1 && ` · ${t('fsend.roundOf', { round: fileJob.round, rounds: fileJob.rounds || '∞' })}`}
             <button className="danger small" onClick={stopFileSend}>
               {t('fsend.stop')}
             </button>

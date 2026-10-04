@@ -4,11 +4,11 @@ import { DEFAULT_FILE_SEND } from '../fileSend'
 import type { State } from '../store/types'
 
 /** 스토어 없이 slice만: send는 보낸 바이트를 기록 */
-function setup(intervalMs: number): { state: State; sent: number[] } {
+function setup(intervalMs: number, repeat = 1): { state: State; sent: number[] } {
   const sent: number[] = []
   const state = {
     connected: true,
-    fileSend: { ...DEFAULT_FILE_SEND, intervalMs },
+    fileSend: { ...DEFAULT_FILE_SEND, intervalMs, repeat },
     send: async (b: Uint8Array) => {
       sent.push(b[0])
       return true
@@ -55,5 +55,23 @@ describe('fileSendSlice', () => {
     await vi.advanceTimersByTimeAsync(100)
     await done
     expect(sent.length).toBeLessThan(5)
+  })
+
+  it('반복: 지정 횟수만큼 처음부터 다시 보냄', async () => {
+    const { state, sent } = setup(10, 3)
+    const done = state.startFileSend(items(2), 'a.txt')
+    await vi.advanceTimersByTimeAsync(200)
+    await done
+    expect(sent).toEqual([0, 1, 0, 1, 0, 1])
+  })
+
+  it('반복 0: 중지할 때까지 계속', async () => {
+    const { state, sent } = setup(10, 0)
+    const done = state.startFileSend(items(2), 'a.txt')
+    await vi.advanceTimersByTimeAsync(95)
+    state.stopFileSend()
+    await done
+    expect(sent.length).toBeGreaterThan(4)
+    expect(state.fileJob).toBeNull()
   })
 })

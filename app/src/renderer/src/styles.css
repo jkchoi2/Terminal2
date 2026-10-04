@@ -753,13 +753,22 @@ body.resizing {
   font-size: 11px;
 }
 .fsend-grid {
-  grid-template-columns: 100px 1fr;
+  /* minmax(0, …): 긴 파일 경로가 창 폭을 넘지 않고 …으로 줄어들게 */
+  grid-template-columns: 100px minmax(0, 1fr);
   align-items: center;
 }
 .fsend-grid .row {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+.fsend-grid .hint {
+  white-space: normal;
+}
+.fsend-grid .row > button,
+.fsend-grid .row > .muted {
+  flex-shrink: 0;
 }
 .fsend-path {
   flex: 1;
@@ -788,6 +797,26 @@ body.resizing {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.fsend-len {
+  display: inline-block;
+  min-width: 52px;
+  color: var(--muted);
+  margin-right: 8px;
+  text-align: right;
+}
+/* 실제 제어 바이트(CR, LF …)는 수신창과 같은 배지로, 파일에 글자로 쓰인 "<CR>"과 구분 */
+.fsend-data .ctrl {
+  background: var(--accent-2);
+  color: #fff;
+  border-radius: 3px;
+  font-size: 10px;
+  padding: 0 3px;
+  margin: 0 1px;
+  vertical-align: 1px;
+}
+.fsend-exclude {
+  flex: 1;
 }
 
 /* ---------- status bar ---------- */
@@ -1306,6 +1335,9 @@ body.resizing-x {
   border-bottom-left-radius: 0;
   border-left: none;
   padding: 0 5px;
+}
+.split-btn > .primary.split-arrow {
+  border-left: 1px solid #ffffff55;
 }
 .log-btn {
   display: inline-flex;

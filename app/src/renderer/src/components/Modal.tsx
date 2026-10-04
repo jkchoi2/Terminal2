@@ -8,6 +8,10 @@ interface Props {
   footer?: ReactNode
   /** Fixed width in px, or 'large' = follows the window size (94% × 92%) */
   size?: number | 'large'
+  /** false: 바깥(배경)을 눌러도 닫히지 않음 */
+  closeOnBackdrop?: boolean
+  /** false: Esc로 닫히지 않음 (✕·버튼으로만 닫기) */
+  closeOnEsc?: boolean
 }
 
 // Open modals, innermost last; Esc closes only the top one.
@@ -15,9 +19,11 @@ const stack: symbol[] = []
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v))
 
-export function Modal({ title, onClose, children, footer, size = 760 }: Props): JSX.Element {
+export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true }: Props): JSX.Element {
   const closeRef = useRef(onClose)
   closeRef.current = onClose
+  const escRef = useRef(closeOnEsc)
+  escRef.current = closeOnEsc
   const boxRef = useRef<HTMLDivElement>(null)
   /** 제목줄을 끌어 옮긴 거리 (창 밖으로는 못 나감). 다시 열면 가운데에서 시작 */
   const [pos, setPos] = useState({ x: 0, y: 0 })
@@ -49,7 +55,7 @@ export function Modal({ title, onClose, children, footer, size = 760 }: Props): 
     const me = Symbol(title)
     stack.push(me)
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' && stack[stack.length - 1] === me) closeRef.current()
+      if (e.key === 'Escape' && escRef.current && stack[stack.length - 1] === me) closeRef.current()
     }
     window.addEventListener('keydown', onKey)
     return () => {
@@ -64,7 +70,7 @@ export function Modal({ title, onClose, children, footer, size = 760 }: Props): 
   }
 
   return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
+    <div className="modal-backdrop" onMouseDown={closeOnBackdrop ? onClose : undefined}>
       <div ref={boxRef} className={`modal${size === 'large' ? ' large' : ''}`} style={style} onMouseDown={(e) => e.stopPropagation()}>
         <header className="modal-head" onMouseDown={startDrag}>
           <h2>{title}</h2>

@@ -152,7 +152,7 @@ export interface UiState {
 /** 파일 전송 (fileSendSlice) */
 export interface FileSendState {
   /** 전송 중이면 진행 상황 */
-  fileJob: { name: string; i: number; n: number } | null
+  fileJob: { name: string; i: number; n: number; round: number; rounds: number } | null
   setFileSend: (patch: Partial<FileSendSpec>) => void
   startFileSend: (items: Uint8Array[], name: string) => Promise<void>
   stopFileSend: () => void

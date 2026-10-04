@@ -72,6 +72,26 @@ export function encodeText(text: string): Uint8Array {
   return Uint8Array.from(out)
 }
 
+/**
+ * 파일 등의 원래 바이트에서 `<CR>`·`<STX>`·`<0D>` 같은 표기만 해당 바이트로 바꾼다.
+ * 나머지 바이트(EUC-KR/UTF-8 한글 포함)는 그대로 둔다. 표기는 ASCII 문자뿐이라 멀티바이트 글자와 겹치지 않는다.
+ */
+export function parseTagBytes(bytes: Uint8Array): Uint8Array {
+  const text = toLatin1(bytes)
+  const out: number[] = []
+  let last = 0
+  for (const m of text.matchAll(TAG_RE)) {
+    const b = tagByte(m[1])
+    if (b === undefined) continue
+    for (let i = last; i < m.index!; i++) out.push(bytes[i])
+    out.push(b)
+    last = m.index! + m[0].length
+  }
+  if (last === 0) return bytes
+  for (let i = last; i < bytes.length; i++) out.push(bytes[i])
+  return Uint8Array.from(out)
+}
+
 export function buildPayload(mode: DataMode, text: string, cr: boolean, lf: boolean): ParseResult {
   const body = mode === 'hex' ? parseHex(text) : { bytes: encodeText(text) }
   if (body.error) return body

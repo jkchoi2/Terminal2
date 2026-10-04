@@ -15,43 +15,82 @@ const LINE_ENDS: { v: LineEnd; label: string }[] = [
   { v: 'lf', label: 'LF' },
   { v: 'crlf', label: 'CRLF' }
 ]
-const PREVIEW_ITEMS = 6
-const PREVIEW_BYTES = 64
+const PREVIEW_ITEMS = 8
+/** 미리보기에서 한 조각을 이만큼까지만 그린다 (화면 폭을 넘는 부분은 어차피 …으로 잘림) */
+const PREVIEW_MAX_BYTES = 512
 
 const errText = (e: unknown): string => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, '')
 
-/** 미리보기 한 줄: 텍스트면 ASCII, 아니면 HEX (앞부분만) */
-function previewOf(b: Uint8Array): string {
-  const head = b.subarray(0, PREVIEW_BYTES)
-  const s = isText(head) ? asciiSegments(head).map((x) => x.text).join('') : toHex(head)
-  return b.length > PREVIEW_BYTES ? `${s} …` : s
+/**
+ * 보낼 조각 한 줄: 실제 제어 바이트(CR, LF, STX …)는 배지로, 파일에 글자로 적힌 "<CR>"은 일반 글자로 보여 준다.
+ * 텍스트가 아닌 조각(HEX 줄, 바이너리 파일)은 HEX로.
+ */
+function PreviewLine({ b, hex, lines }: { b: Uint8Array; hex: boolean; lines: boolean }): JSX.Element {
+  const head = b.subarray(0, PREVIEW_MAX_BYTES)
+  // 줄 단위 ASCII는 항상 글자로 (제어 바이트는 배지). 전체/N바이트는 바이너리 파일이면 HEX.
+  const asHex = hex || (!lines && !isText(head))
+  const segs = asHex ? null : asciiSegments(head)
+  const title = asHex ? toHex(head) : segs!.map((s) => s.text).join('')
+  return (
+    <li title={title}>
+      <span className="fsend-len">{b.length} B</span>
+      <span className="fsend-data">
+        {asHex
+          ? toHex(head)
+          : segs!.map((s, i) =>
+              s.ctrl ? (
+                <span key={i} className="ctrl">
+                  {s.text}
+                </span>
+              ) : (
+                <span key={i}>{s.text}</span>
+              )
+            )}
+        {b.length > PREVIEW_MAX_BYTES && ' …'}
+      </span>
+    </li>
+  )
 }
 
-/** 파일 전송 설정 창: 파일, 나누는 방식, 줄 끝, 간격, 미리보기 */
+/** 파일 전송 설정 창: 파일, 나누는 방식, 줄 끝, 간격, 미리보기. ✕·취소·보내기로만 닫힌다. */
 export function FileSendDialog(): JSX.Element {
-  const { spec, connected, lastDir } = useStore(useShallow((s) => ({ spec: s.fileSend, connected: s.connected, lastDir: s.lastDir })))
+  const { spec, connected, lastDir, encoding } = useStore(
+    useShallow((s) => ({ spec: s.fileSend, connected: s.connected, lastDir: s.lastDir, encoding: s.encoding }))
+  )
   const { setFileSend, startFileSend, setModal } = useStore(
     useShallow((s) => ({ setFileSend: s.setFileSend, startFileSend: s.startFileSend, setModal: s.setModal }))
   )
   const [bytes, setBytes] = useState<Uint8Array | null>(null)
   const [readError, setReadError] = useState('')
+  const [prefixText, setPrefixText] = useState(spec.excludePrefixes)
 
   useEffect(() => {
     if (!spec.path) return
     let alive = true
     window.api
       .readBytes(spec.path)
-      .then((b) => alive && (setBytes(b), setReadError('')))
-      .catch((e) => alive && (setBytes(null), setReadError(t('fsend.readError', { msg: errText(e) }))))
+      .then((b) => {
+        if (!alive) return
+        setBytes(b)
+        setReadError('')
+      })
+      .catch((e) => {
+        if (!alive) return
+        setBytes(null)
+        setReadError(t('fsend.readError', { msg: errText(e) }))
+      })
     return () => {
       alive = false
     }
   }, [spec.path])
 
-  const split = useMemo(() => (bytes ? splitFile(bytes, spec) : null), [bytes, spec])
+  // encoding: 제외 문자열(한글)을 현재 인코딩으로 비교하므로 바뀌면 다시 나눈다.
+  const split = useMemo(() => (bytes ? splitFile(bytes, spec) : null), [bytes, spec, encoding])
   const total = split?.items.reduce((n, b) => n + b.length, 0) ?? 0
   const error = readError || split?.error || (split && split.items.length === 0 ? t('fsend.empty') : '')
   const canSend = connected && !!split && !error
+  const lines = spec.mode === 'lines'
+  const hexPreview = lines && spec.lineFormat === 'hex'
 
   const pick = async (): Promise<void> => {
     const dir = spec.path ? spec.path.replace(/[\\/][^\\/]*$/, '') : lastDir
@@ -59,9 +98,10 @@ export function FileSendDialog(): JSX.Element {
     if (path) setFileSend({ path })
   }
 
+  const close = (): void => setModal(null)
   const start = (): void => {
     if (!split || !canSend) return
-    setModal(null)
+    close()
     void startFileSend(split.items, fileName(spec.path))
   }
 
@@ -70,13 +110,15 @@ export function FileSendDialog(): JSX.Element {
   return (
     <Modal
       title={t('fsend.title')}
-      onClose={() => setModal(null)}
-      size={620}
+      onClose={close}
+      size={680}
+      closeOnBackdrop={false}
+      closeOnEsc={false}
       footer={
         <>
           <span className="hint">{connected ? '' : t('fsend.notConnected')}</span>
           <div className="spacer" />
-          <button onClick={() => setModal(null)}>{t('common.cancel')}</button>
+          <button onClick={close}>{t('common.cancel')}</button>
           <button className="primary" disabled={!canSend} onClick={start}>
             {t('fsend.start')}
           </button>
@@ -101,17 +143,40 @@ export function FileSendDialog(): JSX.Element {
           ))}
         </div>
 
-        {spec.mode === 'lines' && (
+        {lines && (
           <>
             <label>{t('fsend.lineFormat')}</label>
-            <div className="segmented small">
-              <button className={spec.lineFormat === 'ascii' ? 'active' : ''} onClick={() => setFileSend({ lineFormat: 'ascii' })}>
-                {t('fsend.lineFormatAscii')}
-              </button>
-              <button className={spec.lineFormat === 'hex' ? 'active' : ''} onClick={() => setFileSend({ lineFormat: 'hex' })}>
-                {t('fsend.lineFormatHex')}
-              </button>
+            <div className="row">
+              <div className="segmented small">
+                <button className={spec.lineFormat === 'ascii' ? 'active' : ''} onClick={() => setFileSend({ lineFormat: 'ascii' })}>
+                  {t('fsend.lineFormatAscii')}
+                </button>
+                <button className={spec.lineFormat === 'hex' ? 'active' : ''} onClick={() => setFileSend({ lineFormat: 'hex' })}>
+                  {t('fsend.lineFormatHex')}
+                </button>
+              </div>
+              {spec.lineFormat === 'ascii' && (
+                <label className="check" title={t('fsend.parseTagsTip')}>
+                  <input type="checkbox" checked={spec.parseTags} onChange={(e) => setFileSend({ parseTags: e.target.checked })} />
+                  {t('fsend.parseTags')}
+                </label>
+              )}
             </div>
+
+            <label>{t('fsend.exclude')}</label>
+            <div className="row">
+              <input
+                className="mono fsend-exclude"
+                value={prefixText}
+                placeholder={t('fsend.excludePlaceholder')}
+                onChange={(e) => {
+                  setPrefixText(e.target.value)
+                  setFileSend({ excludePrefixes: e.target.value })
+                }}
+              />
+              {!!split?.excluded && <span className="muted">{t('fsend.excludedN', { n: split.excluded.toLocaleString() })}</span>}
+            </div>
+
             <label>{t('fsend.lineEnd')}</label>
             <div className="row">
               <div className="segmented small">
@@ -126,6 +191,8 @@ export function FileSendDialog(): JSX.Element {
                 {t('fsend.skipEmpty')}
               </label>
             </div>
+            <span />
+            <span className="hint">{t('fsend.lineEndHint')}</span>
           </>
         )}
 
@@ -145,7 +212,19 @@ export function FileSendDialog(): JSX.Element {
           </>
         )}
 
-        {spec.mode !== 'whole' && (
+        <label>{t('fsend.repeat')}</label>
+        <div className="row">
+          <input
+            type="number"
+            className="num-input tiny"
+            min={0}
+            value={spec.repeat}
+            onChange={(e) => setFileSend({ repeat: num(e.target.value, 0) })}
+          />
+          <span className="muted">{t('fsend.repeatUnit')}</span>
+        </div>
+
+        {(spec.mode !== 'whole' || spec.repeat !== 1) && (
           <>
             <label>{t('fsend.interval')}</label>
             <div className="row">
@@ -167,10 +246,13 @@ export function FileSendDialog(): JSX.Element {
           <p className="hint error">{error}</p>
         ) : split ? (
           <>
-            <p className="hint">{t('fsend.preview', { n: split.items.length.toLocaleString(), bytes: total.toLocaleString() })}</p>
+            <p className="hint">
+              {t('fsend.preview', { n: split.items.length.toLocaleString(), bytes: total.toLocaleString() })}
+              {!hexPreview && <span className="muted"> · {t('fsend.previewNote', { enc: encoding.toUpperCase() })}</span>}
+            </p>
             <ol className="mono">
               {split.items.slice(0, PREVIEW_ITEMS).map((b, i) => (
-                <li key={i}>{previewOf(b)}</li>
+                <PreviewLine key={i} b={b} hex={hexPreview} lines={lines} />
               ))}
             </ol>
             {split.items.length > PREVIEW_ITEMS && (
