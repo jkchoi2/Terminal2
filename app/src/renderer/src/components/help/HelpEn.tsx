@@ -46,6 +46,12 @@ export function HelpEn(): JSX.Element {
           <code>#2</code> in its title and keeps its settings in <code>Config-Terminal2-2.json</code> (copied from the first one at
           first start).
         </p>
+        <p>
+          To always start with the same settings regardless of launch order, use a <b>profile</b>: set things up, then ▾ next to
+          Connect → <b>Desktop shortcut with these settings…</b> and enter a name (e.g. server). The settings are saved to{' '}
+          <code>Config-Terminal2-server.json</code> and a desktop shortcut <code>Terminal2 - server</code> (
+          <code>Terminal2.exe --profile=server</code>) is created. Windows started from it show <code>[server]</code> in the title.
+        </p>
       </Section>
 
       <Section id="frame" title="3. Packet framing">

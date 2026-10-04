@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('api', {
   readBytes: (path: string) => ipcRenderer.invoke(IPC.fileReadBytes, path),
   baseDir: () => ipcRenderer.invoke(IPC.baseDir),
   instance: () => ipcRenderer.invoke(IPC.instance),
+  createShortcut: (name: string, json: string, overwrite: boolean) => ipcRenderer.invoke(IPC.profileShortcut, name, json, overwrite),
   backup: (kind: string, content: string) => ipcRenderer.invoke(IPC.backup, kind, content),
   ask: (message: string, detail: string, buttons: string[]) => ipcRenderer.invoke(IPC.ask, message, detail, buttons),
   loadConfig: () => ipcRenderer.invoke(IPC.configLoad),

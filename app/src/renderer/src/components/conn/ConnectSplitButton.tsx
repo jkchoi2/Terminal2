@@ -8,7 +8,9 @@ import { ContextMenu } from '../ContextMenu'
 /** Connect/Disconnect 버튼 + ▾ 연결 방식 선택 (Split Button) */
 export function ConnectSplitButton(): JSX.Element {
   const { connKind, connected, busy } = useStore(useShallow((s) => ({ connKind: s.connKind, connected: s.connected, busy: s.busy })))
-  const { setConnKind, toggleConnect } = useStore(useShallow((s) => ({ setConnKind: s.setConnKind, toggleConnect: s.toggleConnect })))
+  const { setConnKind, toggleConnect, setModal } = useStore(
+    useShallow((s) => ({ setConnKind: s.setConnKind, toggleConnect: s.toggleConnect, setModal: s.setModal }))
+  )
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
   const arrowRef = useRef<HTMLButtonElement>(null)
   const locked = connected || busy
@@ -42,10 +44,14 @@ export function ConnectSplitButton(): JSX.Element {
           x={menu.x}
           y={menu.y}
           onClose={() => setMenu(null)}
-          items={CONN_KINDS.map((k) => ({
-            label: `${k === connKind ? '✓ ' : ' '}${CONN_LABEL[k]}`,
-            onClick: () => setConnKind(k)
-          }))}
+          items={[
+            ...CONN_KINDS.map((k) => ({
+              label: `${k === connKind ? '✓ ' : '\u2003'}${CONN_LABEL[k]}`,
+              onClick: () => setConnKind(k)
+            })),
+            'sep' as const,
+            { label: t('shortcut.menu'), onClick: () => setModal('shortcut') }
+          ]}
         />
       )}
     </div>

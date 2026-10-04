@@ -1,5 +1,5 @@
 // Renames electron-builder's dist/win-unpacked to dist/Terminal2 (the folder users copy),
-// keeping every Config-Terminal2*.json already there (including -2, -3 … of extra instances)
+// keeping every Config-Terminal2*.json already there (-2, -3 … of extra instances, -<profile> of profiles)
 // so a rebuild never loses the user's settings.
 // Settings from an older Config.json (dist/Terminal2 or dist/SerialTerminal) are carried over the first time.
 import { copyFileSync, existsSync, readdirSync, renameSync, rmSync } from 'fs'
@@ -22,7 +22,7 @@ for (const [name, old] of keep) {
   if (src) copyFileSync(src, join(from, name))
 }
 if (existsSync(to)) {
-  for (const f of readdirSync(to).filter((f) => /^Config-Terminal2-\d+(\.bak)?\.json$/.test(f))) {
+  for (const f of readdirSync(to).filter((f) => /^Config-Terminal2-.+\.json$/.test(f))) {
     copyFileSync(join(to, f), join(from, f))
   }
 }

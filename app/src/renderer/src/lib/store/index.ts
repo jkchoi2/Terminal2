@@ -6,6 +6,7 @@ import { createUiSlice } from './uiSlice'
 import { createFileSendSlice } from './fileSendSlice'
 import { bindLogQueue } from './logQueue'
 import { initialSnapshot, startApp } from './persist'
+export { currentConfigJson } from './persist'
 import type { State } from './types'
 
 export const useStore = create<State>((set, get) => ({

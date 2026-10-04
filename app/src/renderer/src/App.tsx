@@ -12,6 +12,7 @@ import { MacroEditor } from './components/MacroEditor'
 import { RequestResponseEditor } from './components/RequestResponseEditor'
 import { QuickHelp } from './components/QuickHelp'
 import { FileSendDialog } from './components/FileSendDialog'
+import { ShortcutDialog } from './components/ShortcutDialog'
 import { t } from '@/lib/i18n'
 import { describeConn } from '@/lib/conn'
 import { CONN_LABEL } from '../../shared/transport'
@@ -19,10 +20,10 @@ import { CONN_LABEL } from '../../shared/transport'
 /** 타이틀바(작업 표시줄)에 연결 방식과 주소를 보여 준다: exe를 여러 개 띄워도 구분되도록 */
 function useWindowTitle(): void {
   const s = useStore(
-    useShallow((s) => ({ connKind: s.connKind, net: s.net, config: s.config, connected: s.connected, peers: s.peers.length, instance: s.instance, language: s.language }))
+    useShallow((s) => ({ connKind: s.connKind, net: s.net, config: s.config, connected: s.connected, peers: s.peers.length, instance: s.instance, profile: s.profile, language: s.language }))
   )
   useEffect(() => {
-    const inst = s.instance > 1 ? ` #${s.instance}` : ''
+    const inst = (s.profile ? ` [${s.profile}]` : '') + (s.instance > 1 ? ` #${s.instance}` : '')
     const state = !s.connected
       ? t('status.disconnected')
       : s.connKind === 'tcp-server'
@@ -77,6 +78,7 @@ export function App(): JSX.Element {
       {modal === 'rr' && <RequestResponseEditor />}
       {modal === 'help' && <QuickHelp />}
       {modal === 'fileSend' && <FileSendDialog />}
+      {modal === 'shortcut' && <ShortcutDialog />}
     </div>
   )
 }

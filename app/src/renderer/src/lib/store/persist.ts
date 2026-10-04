@@ -51,10 +51,15 @@ export function initialSnapshot(): Snapshot {
   }
 }
 
+/** 지금 설정 전체 (Config-Terminal2.json 형식) */
+export function currentConfigJson(): string {
+  return store ? JSON.stringify({ version: CONFIG_VERSION, ...store.getState().snapshot() }, null, 2) : ''
+}
+
 let lastSaved = ''
 export async function saveNow(): Promise<void> {
   if (!store) return
-  const json = JSON.stringify({ version: CONFIG_VERSION, ...store.getState().snapshot() }, null, 2)
+  const json = currentConfigJson()
   if (json === lastSaved) return
   lastSaved = json
   try {
@@ -88,7 +93,7 @@ export async function startApp(api: StoreApi<State>): Promise<void> {
     for (const f of frames) s.handleFrame(f.bytes, f.time, f.peer)
   })
   window.api.conn.onEvent((e) => api.getState().handleEvent(e))
-  api.setState({ instance: await window.api.instance().catch(() => 1) })
+  api.setState(await window.api.instance().catch(() => ({ instance: 1, profile: '' })))
   void api.getState().loadInterfaces()
 
   wireChart(api)

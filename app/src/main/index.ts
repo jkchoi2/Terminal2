@@ -1,8 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, type FileFilter } from 'electron'
 import { mkdir, readFile, readdir, rm, writeFile } from 'fs/promises'
 import { join } from 'path'
-import { baseDir, configPath, loadConfig, saveConfig, setConfigInstance } from './config'
+import { baseDir, configPath, loadConfig, saveConfig, setConfigSuffix } from './config'
 import { acquireInstance } from './instance'
+import { createProfileShortcut } from './profile'
+import { profileFromArgs } from '../shared/profile'
 import { ConnectionManager, localAddresses } from './transport/manager'
 import { listSerialPorts } from './transport/serial'
 import { closeChart, registerChartIpc } from './chart'
@@ -16,6 +18,8 @@ const conn = new ConnectionManager(() => mainWindow?.webContents)
 const fileLog = new FileLogger(() => mainWindow?.webContents)
 /** 같은 폴더의 exe 중 몇 번째 실행인지 (타이틀바 표시, 설정 파일 이름) */
 let instance = 1
+/** --profile=<이름>으로 실행했으면 그 이름 (설정 파일 Config-Terminal2-<이름>.json) */
+let profile = ''
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -77,7 +81,10 @@ function registerIpc(): void {
   ipcMain.handle(IPC.fileReadBytes, async (_e, path: string) => new Uint8Array(await readFile(path)))
 
   ipcMain.handle(IPC.baseDir, () => baseDir())
-  ipcMain.handle(IPC.instance, () => instance)
+  ipcMain.handle(IPC.instance, () => ({ instance, profile }))
+  ipcMain.handle(IPC.profileShortcut, (_e, name: string, json: string, overwrite: boolean) =>
+    createProfileShortcut(name, json, overwrite)
+  )
 
   // Keeps the newest 20 backups per kind in <baseDir>/backup.
   ipcMain.handle(IPC.backup, async (_e, kind: string, content: string) => {
@@ -120,8 +127,9 @@ function registerIpc(): void {
 app.whenReady().then(() => {
   // Groups the taskbar button under the exe's own icon on Windows.
   app.setAppUserModelId('com.terminal2.app')
-  instance = acquireInstance(baseDir())
-  setConfigInstance(instance)
+  profile = profileFromArgs(process.argv)
+  instance = acquireInstance(baseDir(), profile)
+  setConfigSuffix(profile, instance)
   registerIpc()
   createWindow()
   app.on('activate', () => {

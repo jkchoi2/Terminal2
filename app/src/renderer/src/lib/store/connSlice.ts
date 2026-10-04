@@ -122,6 +122,7 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
     sendTarget: null,
     interfaces: [],
     instance: 1,
+    profile: '',
     connected: false,
     busy: false,
     // Off by default like the original Terminal (RTS can switch RS-485 adapters to transmit-only).

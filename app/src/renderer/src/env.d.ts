@@ -37,8 +37,14 @@ declare global {
       pickFile: (defaultPath?: string) => Promise<string | null>
       readBytes: (path: string) => Promise<Uint8Array>
       baseDir: () => Promise<string>
-      /** 같은 폴더 exe 중 몇 번째 실행인지 (1부터) */
-      instance: () => Promise<number>
+      /** 같은 폴더 exe 중 몇 번째 실행인지 (1부터)와 --profile 이름 */
+      instance: () => Promise<{ instance: number; profile: string }>
+      /** 현재 설정을 프로필로 저장하고 바탕화면 바로가기 생성 */
+      createShortcut: (
+        name: string,
+        json: string,
+        overwrite: boolean
+      ) => Promise<{ path: string } | { exists: true } | { error: 'dev' | 'name' | 'failed'; message?: string }>
       backup: (kind: string, content: string) => Promise<void>
       /** Native question box; resolves to the clicked button index (last = cancel) */
       ask: (message: string, detail: string, buttons: string[]) => Promise<number>

@@ -6,9 +6,10 @@ const MAIN_FILE = 'Config-Terminal2.json'
 /** Older builds saved here; read once when the new file does not exist yet. */
 const LEGACY = 'Config.json'
 
-// 2번째 이후로 실행된 exe는 Config-Terminal2-2.json, -3 … 을 쓴다 (동시에 실행한 exe끼리 설정을 덮어쓰지 않도록).
-let instance = 1
-const fileName = (): string => (instance === 1 ? MAIN_FILE : `Config-Terminal2-${instance}.json`)
+// 설정 파일 이름 뒤에 붙는 말: '' = Config-Terminal2.json,
+// '2' = 2번째로 실행한 exe (동시에 실행한 exe끼리 덮어쓰지 않도록), 'server' = --profile=server
+let suffix = ''
+const fileName = (): string => (suffix ? `Config-Terminal2-${suffix}.json` : MAIN_FILE)
 const backupName = (): string => fileName().replace(/\.json$/, '.bak.json')
 
 /** Config-Terminal2.json lives next to the exe (folder build); in development, in the app folder. */
@@ -18,10 +19,15 @@ function preferredDir(): string {
 
 let activePath = join(preferredDir(), MAIN_FILE)
 
-/** 실행 순번에 맞는 설정 파일을 고른다 (앱 시작 시 한 번). */
-export function setConfigInstance(n: number): void {
-  instance = n
+/** 프로필과 실행 순번에 맞는 설정 파일을 고른다 (앱 시작 시 한 번). */
+export function setConfigSuffix(profile: string, instance: number): void {
+  suffix = [profile, instance > 1 ? String(instance) : ''].filter(Boolean).join('-')
   activePath = join(preferredDir(), fileName())
+}
+
+/** 프로필 설정 파일 경로 (바로가기 만들기용) */
+export function profileConfigPath(profile: string): string {
+  return join(preferredDir(), `Config-Terminal2-${profile}.json`)
 }
 
 /** Folder for Config-Terminal2.json, logs and backups (exe folder, or app folder in development). */

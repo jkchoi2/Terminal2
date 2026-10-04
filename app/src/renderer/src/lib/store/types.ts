@@ -29,7 +29,7 @@ export interface Lines {
   rts: boolean
 }
 
-export type ModalKind = null | 'macros' | 'rr' | 'help' | 'fileSend'
+export type ModalKind = null | 'macros' | 'rr' | 'help' | 'fileSend' | 'shortcut'
 
 /** Everything stored in Config-Terminal2.json. */
 export interface Snapshot {
@@ -84,6 +84,8 @@ export interface ConnState {
   interfaces: string[]
   /** 같은 폴더 exe 중 몇 번째 실행인지 */
   instance: number
+  /** --profile=<이름>으로 실행했으면 그 이름 */
+  profile: string
   connected: boolean
   busy: boolean
   lines: Lines

@@ -47,6 +47,12 @@ export function HelpKo(): JSX.Element {
           창은 타이틀에 <code>#2</code>가 붙고 설정을 <code>Config-Terminal2-2.json</code>에 따로 저장합니다(처음에는 첫 번째
           설정을 복사해서 시작).
         </p>
+        <p>
+          실행 순서와 상관없이 늘 같은 설정으로 띄우려면 <b>프로필</b>을 씁니다. 원하는 설정을 맞춘 뒤 Connect 오른쪽 ▾ →
+          <b>현재 설정으로 바탕화면 바로가기 만들기…</b>에서 이름(예: server)을 정하면, 설정이{' '}
+          <code>Config-Terminal2-server.json</code>으로 저장되고 바탕화면에 <code>Terminal2 - server</code> 바로가기(
+          <code>Terminal2.exe --profile=server</code>)가 생깁니다. 바로가기로 실행한 창은 타이틀에 <code>[server]</code>가 붙습니다.
+        </p>
       </Section>
 
       <Section id="frame" title="3. 수신 패킷 구분 (프레임)">

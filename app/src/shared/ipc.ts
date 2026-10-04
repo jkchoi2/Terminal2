@@ -9,6 +9,8 @@ export const IPC = {
   fileReadBytes: 'file:read-bytes',
   baseDir: 'app:baseDir',
   instance: 'app:instance',
+  /** 현재 설정으로 프로필 설정 파일 + 바탕화면 바로가기 만들기 */
+  profileShortcut: 'app:profile-shortcut',
   backup: 'backup:write',
   ask: 'dialog:ask',
   configLoad: 'config:load',
