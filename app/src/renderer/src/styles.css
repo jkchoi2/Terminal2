@@ -300,6 +300,9 @@ input[type='checkbox'] {
 }
 
 /* 연결 방식별 색 (exe를 여러 개 띄웠을 때 구분용). Serial은 기존 색 그대로 */
+.app {
+  --conn: var(--accent-2);
+}
 .app[data-conn='tcp-client'] {
   --conn: #13a8a0;
 }
@@ -309,19 +312,48 @@ input[type='checkbox'] {
 .app[data-conn='udp'] {
   --conn: #9a5ae0;
 }
-.app:not([data-conn='serial']) .conn-bar {
-  border-left: 5px solid var(--conn);
+.conn-tag {
+  color: var(--conn);
 }
-.app:not([data-conn='serial']) .connect-btn:not(.connected) {
+
+/* Connect Split Button: 왼쪽 연결/해제, 오른쪽 ▾ 연결 방식 선택 */
+.connect-split {
+  display: flex;
+}
+.connect-split .connect-btn {
+  min-width: 118px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.connect-split .connect-btn:not(.connected),
+.connect-arrow:not(.connected) {
   background: var(--conn);
   border-color: var(--conn);
+  color: #fff;
 }
-.app:not([data-conn='serial']) .conn-kind select {
-  border-color: var(--conn);
-  font-weight: 600;
+.connect-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
 }
-.conn-tag {
-  color: var(--conn, var(--accent));
+.connect-label small {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.connect-arrow {
+  height: 46px;
+  width: 22px;
+  padding: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid #ffffff55 !important;
+}
+.connect-arrow.connected {
+  background: color-mix(in srgb, var(--ok) 22%, var(--panel-2));
+  border-color: var(--ok);
+  color: var(--text);
 }
 .host-input {
   width: 130px;

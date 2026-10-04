@@ -30,7 +30,7 @@ export function HelpEn(): JSX.Element {
           <b>LOOPBACK (demo)</b> echoes everything you send, for trying macros and R/R without a device.
         </p>
         <p>
-          <b>Connection</b> switches from Serial to a network connection. The log, macros, R/R and charts work the same way for
+          The <b>▾</b> on the right of the Connect button switches from Serial to a network connection. The log, macros, R/R and charts work the same way for
           every connection type.
         </p>
         <Table
@@ -42,7 +42,7 @@ export function HelpEn(): JSX.Element {
         />
         <p>
           The ▾ next to an address lists recently used addresses (20 per type). When you run several copies, say one server and one
-          client, the title bar shows the connection type and address and the top bar is colored per type. The second copy shows
+          client, the title bar shows the connection type and address and the Connect button is colored per type. The second copy shows
           <code>#2</code> in its title and keeps its settings in <code>Config-Terminal2-2.json</code> (copied from the first one at
           first start).
         </p>
