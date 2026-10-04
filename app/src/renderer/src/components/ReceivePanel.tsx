@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n'
 import type { Dir, FrameMode, FrameSpec, LogEntry } from '@/lib/types'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { Icon } from './Icon'
+import { LogButton } from './LogButton'
 
 /** Fixed line height (px) so only the visible lines need to be in the DOM. */
 const LINE_H = 20
@@ -445,10 +446,7 @@ export function ReceivePanel(): JSX.Element {
           <Icon name="copy" />
           {t('rx.copyAll')}
         </button>
-        <button className="ico-btn" onClick={save} title={t('rx.menu.save')}>
-          <Icon name="save" />
-          {t('rx.save')}
-        </button>
+        <LogButton />
         <button className={rrEnabled ? 'rr-on' : ''} onClick={() => setModal('rr')} title={t('rr.title')}>
           <span className={`dot ${rrEnabled ? 'on' : ''}`} /> R/R
         </button>

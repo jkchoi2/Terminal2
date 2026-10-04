@@ -4,7 +4,7 @@ import { setLang } from '../i18n'
 import { normalizeCharts } from '../chartDefaults'
 import { blankMacro, uid } from './defaults'
 import { sendChartSample } from './chart'
-import { pending } from './logQueue'
+import { dropPendingLog } from './logQueue'
 import { saveNow } from './persist'
 import type { GetState, SetState, UiState } from './types'
 
@@ -16,15 +16,19 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
     modal: null,
     configPath: '',
     lastRx: null,
+    logStatus: null,
+    logError: '',
 
     setRx: (patch) => set((s) => ({ rx: { ...s.rx, ...patch } })),
     clearLog: () => {
-      pending.log = []
+      dropPendingLog()
       set({ log: [] })
     },
     resetCounters: () => set({ rxCount: 0, txCount: 0 }),
     setModal: (modal) => set({ modal }),
     setMacroPaneHeight: (h) => set({ macroPaneHeight: Math.round(Math.min(480, Math.max(34, h))) }),
+    setLogEnabled: (logEnabled) => set({ logEnabled }),
+    setLogRetention: (days) => set({ logRetentionDays: Math.max(0, Math.min(3650, Math.round(days) || 0)) }),
     toggleMacros: () => set((s) => ({ macroCollapsed: !s.macroCollapsed })),
     toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
     setLanguage: (language) => {
@@ -45,7 +49,8 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
         language: s.language, encoding: s.encoding, dtr: s.dtr, rts: s.rts,
         lastDir: s.lastDir, macroFile: s.macroFile, rrFile: s.rrFile,
         charts: s.charts, activeChartId: s.activeChartId, chartCollecting: s.chartCollecting,
-        chartOnTop: s.chartOnTop, chartWindow: s.chartWindow, chartsFile: s.chartsFile
+        chartOnTop: s.chartOnTop, chartWindow: s.chartWindow, chartsFile: s.chartsFile,
+        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays
       }
     },
 

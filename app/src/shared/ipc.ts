@@ -28,5 +28,14 @@ export const IPC = {
   connFrames: 'conn:frames',
   /** main → renderer: ConnEvent */
   connEvent: 'conn:event',
-  netInterfaces: 'net:interfaces'
+  netInterfaces: 'net:interfaces',
+
+  /** 파일 로그 (실행폴더\Log) */
+  logStart: 'log:start',
+  logAppend: 'log:append',
+  logStop: 'log:stop',
+  logCleanup: 'log:cleanup',
+  logOpenFolder: 'log:open-folder',
+  /** main → renderer: { status: { path, size } | null, error? } */
+  logStatus: 'log:status'
 } as const

@@ -6,12 +6,14 @@ import { acquireInstance } from './instance'
 import { ConnectionManager, localAddresses } from './transport/manager'
 import { listSerialPorts } from './transport/serial'
 import { closeChart, registerChartIpc } from './chart'
+import { FileLogger } from './logger'
 import type { FrameSpec } from '../shared/frame'
 import { IPC } from '../shared/ipc'
-import type { OpenRequest } from '../shared/transport'
+import type { ConnKind, OpenRequest } from '../shared/transport'
 
 let mainWindow: BrowserWindow | undefined
 const conn = new ConnectionManager(() => mainWindow?.webContents)
+const fileLog = new FileLogger(() => mainWindow?.webContents)
 /** 같은 폴더의 exe 중 몇 번째 실행인지 (타이틀바 표시, 설정 파일 이름) */
 let instance = 1
 
@@ -34,6 +36,7 @@ function createWindow(): void {
   mainWindow.on('closed', () => {
     mainWindow = undefined
     void conn.close()
+    fileLog.stop()
     closeChart()
   })
   loadPage(mainWindow, 'index.html')
@@ -95,6 +98,12 @@ function registerIpc(): void {
   ipcMain.handle(IPC.connWrite, (_e, bytes: Uint8Array, to?: string) => conn.write(bytes, to))
   ipcMain.on(IPC.connFrameSpec, (_e, spec: FrameSpec) => conn.setFrame(spec))
   ipcMain.handle(IPC.netInterfaces, () => localAddresses())
+
+  ipcMain.on(IPC.logStart, (_e, kind: ConnKind, target: string, retentionDays: number) => fileLog.start(kind, target, retentionDays))
+  ipcMain.on(IPC.logAppend, (_e, text: string) => fileLog.append(text))
+  ipcMain.on(IPC.logStop, () => fileLog.stop())
+  ipcMain.handle(IPC.logCleanup, (_e, days: number) => fileLog.cleanup(days))
+  ipcMain.handle(IPC.logOpenFolder, () => fileLog.openFolder())
 
   ipcMain.on(IPC.quit, () => app.quit())
 

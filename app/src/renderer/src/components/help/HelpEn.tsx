@@ -152,7 +152,13 @@ XOR8, range 2 ~ -1  ->  D0 ^ 00 = D0   ->  02 05 D0 00 D0`}</pre>
       <Section id="files" title="12. Files & logs">
         <p>
           File dialogs start in the last folder used. Macro / R/R / chart lists remember their file, show "modified", and ask before
-          loading over unsaved edits; the previous list is copied to exe folder\backup. Save writes the current receive view to a text file.
+          loading over unsaved edits; the previous list is copied to exe folder\backup. Right-click → Save writes the current receive view to a text file.
+        </p>
+        <p>
+          <b>● LOG</b> in the receive toolbar keeps a continuous log: while on, every connection gets a new file in
+          <code>exe folder\Log\Serial|TcpClient|TcpServer|Udp\</code> (not limited to the 5,000 lines on screen; a new part every
+          10MB). Grey dot = off, red ring = starts when connected, red dot = writing. <b>▾</b> shows the current file, the retention
+          period (older files are deleted) and opens the log folder.
         </p>
       </Section>
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { checksumBytes, computeChecksum, defaultChecksum } from '../checksum'
 import { buildPayload, parseHex, toHex } from '../hex'
 import { buildPacket } from '../packet'
+import { logLine } from '../logFormat'
 import { compileRequest, type Matcher } from '../pattern'
 import type { ChecksumSpec, PacketSpec, RequestSpec } from '../types'
 
@@ -79,5 +80,18 @@ describe('compileRequest', () => {
     const m = request({ mode: 'hex', pattern: '01 03 00 00 00 02 ?? ??', verify: { ...cs({ type: 'crc16modbus', start: 0, end: -3 }), pos: -2 } })
     expect(m.test(Uint8Array.from([1, 3, 0, 0, 0, 2, 0xc4, 0x0b]))).toBe(true)
     expect(m.test(Uint8Array.from([1, 3, 0, 0, 0, 2, 0x00, 0x00]))).toBe(false)
+  })
+})
+
+describe('logLine', () => {
+  const at = new Date(2026, 0, 2, 3, 4, 5, 6).getTime()
+  it('Rx ASCII + 보낸 쪽 + 제어문자 태그', () => {
+    expect(logLine({ id: 1, dir: 'rx', time: at, bytes: ascii('OK\r'), text: '1.2.3.4:5' }, 'ascii')).toBe(
+      '[03:04:05.006] Rx(  3): [1.2.3.4:5] OK<CR>'
+    )
+  })
+  it('Tx HEX, 시스템 메시지', () => {
+    expect(logLine({ id: 2, dir: 'tx', time: at, bytes: Uint8Array.from([1, 0xab]) }, 'hex')).toBe('[03:04:05.006] Tx(  2): 01 AB')
+    expect(logLine({ id: 3, dir: 'sys', time: at, bytes: new Uint8Array(), text: '연결됨' }, 'hex')).toBe('[03:04:05.006] — 연결됨 —')
   })
 })

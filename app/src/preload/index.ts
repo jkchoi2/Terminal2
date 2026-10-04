@@ -40,5 +40,13 @@ contextBridge.exposeInMainWorld('api', {
     onFrames: (cb: (f: unknown[]) => void) => on(IPC.connFrames, cb),
     onEvent: (cb: (e: unknown) => void) => on(IPC.connEvent, cb),
     interfaces: () => ipcRenderer.invoke(IPC.netInterfaces)
+  },
+  log: {
+    start: (kind: string, target: string, retentionDays: number) => ipcRenderer.send(IPC.logStart, kind, target, retentionDays),
+    append: (text: string) => ipcRenderer.send(IPC.logAppend, text),
+    stop: () => ipcRenderer.send(IPC.logStop),
+    cleanup: (days: number) => ipcRenderer.invoke(IPC.logCleanup, days),
+    openFolder: () => ipcRenderer.invoke(IPC.logOpenFolder),
+    onStatus: (cb: (s: unknown) => void) => on(IPC.logStatus, cb)
   }
 })

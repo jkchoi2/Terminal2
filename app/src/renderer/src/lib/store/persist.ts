@@ -6,6 +6,7 @@ import { defaultCharts } from '../chartDefaults'
 import { setEncoding } from '../encoding'
 import { setLang, t } from '../i18n'
 import { wireChart } from './chart'
+import { wireFileLog } from './fileLog'
 import { defaultMacros, defaultRules, errMsg, MACRO_PANE_2_ROWS } from './defaults'
 import { appendLog, entry } from './logQueue'
 import type { Snapshot, State } from './types'
@@ -42,7 +43,9 @@ export function initialSnapshot(): Snapshot {
     chartCollecting: true,
     chartOnTop: false,
     chartWindow: null,
-    chartsFile: null
+    chartsFile: null,
+    logEnabled: false,
+    logRetentionDays: 30
   }
 }
 
@@ -87,6 +90,7 @@ export async function startApp(api: StoreApi<State>): Promise<void> {
   void api.getState().loadInterfaces()
 
   wireChart(api)
+  wireFileLog(api)
   await api.getState().rescan()
   api.getState().clearLog()
   api.setState((s) => ({ log: appendLog(s.log, entry('sys', new Uint8Array(), t('log.ready'))) }))

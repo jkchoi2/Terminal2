@@ -64,6 +64,10 @@ export interface Snapshot {
   chartOnTop: boolean
   chartWindow: { x: number; y: number; width: number; height: number } | null
   chartsFile: FileLink | null
+  /** 파일 로그 (실행폴더\Log): 켜져 있으면 연결할 때마다 새 파일에 기록 */
+  logEnabled: boolean
+  /** 이 기간(일)이 지난 로그 파일은 자동 삭제 (0 = 지우지 않음) */
+  logRetentionDays: number
 }
 
 /** 연결 (connSlice) */
@@ -118,6 +122,9 @@ export interface UiState {
   configPath: string
   /** Last received packet (chart sample) */
   lastRx: Uint8Array | null
+  /** 지금 기록 중인 로그 파일 (null = 기록 안 함) */
+  logStatus: { path: string; size: number } | null
+  logError: string
 
   setRx: (patch: Partial<RxView>) => void
   clearLog: () => void
@@ -125,6 +132,8 @@ export interface UiState {
   setModal: (m: ModalKind) => void
   setMacroPaneHeight: (h: number) => void
   toggleMacros: () => void
+  setLogEnabled: (on: boolean) => void
+  setLogRetention: (days: number) => void
   toggleTheme: () => void
   setLanguage: (l: Lang) => void
   setTextEncoding: (e: TextEncoding) => void

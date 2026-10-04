@@ -27,6 +27,19 @@ export const pending = {
 }
 
 let flushTimer: ReturnType<typeof setTimeout> | undefined
+/** 파일 로그가 켜져 있을 때 반영되는 로그 줄을 받아 간다 (fileLog.ts) */
+let logWriter: ((entries: LogEntry[]) => void) | null = null
+
+export function setLogWriter(w: ((entries: LogEntry[]) => void) | null): void {
+  logWriter = w
+}
+
+/** 화면 로그를 지울 때: 아직 반영 전인 줄은 파일에만 쓰고 버린다. */
+export function dropPendingLog(): void {
+  if (pending.log.length && logWriter) logWriter(pending.log)
+  pending.log = []
+}
+
 let setState: SetState | undefined
 
 /** 스토어를 만든 뒤 한 번 연결한다. */
@@ -47,6 +60,7 @@ function flush(): void {
   pending.lastRx = null
   pending.points = []
   if (points.length) window.api.chart.points(points)
+  if (log.length && logWriter) logWriter(log)
   if (!setState || (!log.length && !rx && !tx && !hits.size)) return
   setState((s) => {
     const next: Partial<typeof s> = {}

@@ -2,7 +2,7 @@
 import type { JSX as ReactJSX } from 'react'
 import type { FrameSpec } from '../../shared/frame'
 import type { PortInfo } from '../../shared/serial'
-import type { ConnEvent, OpenRequest, RxFrame } from '../../shared/transport'
+import type { ConnEvent, ConnKind, OpenRequest, RxFrame } from '../../shared/transport'
 import type { ChartPoint } from './lib/chartTypes'
 import type { ChartMsg } from './lib/chartMsg'
 
@@ -68,6 +68,16 @@ declare global {
         onEvent: (cb: (e: ConnEvent) => void) => () => void
         /** 이 PC의 IPv4 주소 */
         interfaces: () => Promise<string[]>
+      }
+      /** 파일 로그 (실행폴더\Log\<방식>\) */
+      log: {
+        start: (kind: ConnKind, target: string, retentionDays: number) => void
+        append: (text: string) => void
+        stop: () => void
+        /** 보관 기간이 지난 파일 삭제; 지운 개수 */
+        cleanup: (days: number) => Promise<number>
+        openFolder: () => Promise<void>
+        onStatus: (cb: (s: { status: { path: string; size: number } | null; error?: string }) => void) => () => void
       }
     }
   }
