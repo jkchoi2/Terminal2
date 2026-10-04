@@ -391,7 +391,6 @@ export const ko = {
   'send.crTip': '체크하면 끝에 CR(0D)을 붙여 보냄',
   'send.fileMenu': '파일 전송…',
   'send.lfTip': '체크하면 끝에 LF(0A)를 붙여 보냄',
-  'send.moreTip': '다른 보내기 (파일 전송)',
   'send.send': '보내기',
   'send.title': '송신',
   'shortcut.create': '바로가기 만들기',

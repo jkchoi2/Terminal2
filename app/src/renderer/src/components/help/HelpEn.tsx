@@ -10,7 +10,7 @@ export function HelpEn(): JSX.Element {
             ['Top', 'Connect split button (▾ = connection type Serial / TCP Client / TCP Server / UDP, desktop shortcut), fields for that type, signal lines (Serial) or clients (TCP Server), Help, Quit'],
             ['Receive', 'Traffic log: ASCII / HEX / HEX+ASCII, Time, Len, CR/LF, TX, packet framing, find, copy all, ● LOG (file log), R/R, chart'],
             ['Macros', 'Send stored messages with one click. ▾/▸ hides or shows the pane; drag the border above to resize'],
-            ['Send', 'Type and send one line (ASCII/HEX, CR/LF appended when checked). ↑/↓ for history. Send ▾ → send a file'],
+            ['Send', 'Type and send one line (ASCII/HEX, CR/LF appended when checked). ↑/↓ for history. ▾ next to Send = send a file'],
             ['Status bar', 'Connection, summary, Rx/Tx counters with activity LEDs, config file path, encoding, language, theme']
           ]}
         />
@@ -270,7 +270,7 @@ XOR8, range 2 ~ -1  ->  D0 ^ 00 = D0   ->  02 05 D0 00 D0`}</pre>
 
       <Section id="filesend" title="15. Sending a file">
         <p>
-          Send bar <b>Send ▾ → Send file…</b>. Splits a file and sends it piece by piece at an interval — for feeding a list of commands
+          Click <b>▾</b> next to Send to open the file send dialog. Splits a file and sends it piece by piece at an interval — for feeding a list of commands
           or replaying a captured log. This dialog does not close on an outside click or Esc; only ✕, Cancel and Send close it.
         </p>
         <Table

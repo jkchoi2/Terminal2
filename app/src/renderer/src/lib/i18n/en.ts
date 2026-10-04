@@ -393,7 +393,6 @@ export const en: Record<MsgKey, string> = {
   'send.crTip': 'When checked, CR (0D) is appended',
   'send.fileMenu': 'Send file…',
   'send.lfTip': 'When checked, LF (0A) is appended',
-  'send.moreTip': 'More ways to send (file)',
   'send.send': 'Send',
   'send.title': 'Send',
   'shortcut.create': 'Create shortcut',
