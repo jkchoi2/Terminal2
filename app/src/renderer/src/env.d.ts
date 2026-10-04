@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 import type { JSX as ReactJSX } from 'react'
 import type { FrameSpec } from '../../shared/frame'
-import type { PortInfo, RxFrame, SerialConfig, Signals } from '../../shared/serial'
+import type { PortInfo } from '../../shared/serial'
+import type { ConnEvent, OpenRequest, RxFrame } from '../../shared/transport'
 import type { ChartPoint } from './lib/chartTypes'
 import type { ChartMsg } from './lib/chartMsg'
 
@@ -30,6 +31,8 @@ declare global {
       openFile: (filters: FileFilter[], defaultPath?: string) => Promise<{ path: string; content: string } | null>
       writeFile: (path: string, content: string) => Promise<void>
       baseDir: () => Promise<string>
+      /** 같은 폴더 exe 중 몇 번째 실행인지 (1부터) */
+      instance: () => Promise<number>
       backup: (kind: string, content: string) => Promise<void>
       /** Native question box; resolves to the clicked button index (last = cancel) */
       ask: (message: string, detail: string, buttons: string[]) => Promise<number>
@@ -49,15 +52,19 @@ declare global {
       }
       serial: {
         list: () => Promise<PortInfo[]>
-        open: (cfg: SerialConfig, frame: FrameSpec, lines: { dtr: boolean; rts: boolean }) => Promise<void>
-        close: () => Promise<void>
-        write: (bytes: Uint8Array) => Promise<void>
         setLines: (lines: { dtr?: boolean; rts?: boolean }) => Promise<void>
+      }
+      /** 연결 방식(시리얼/TCP/UDP) 공통 */
+      conn: {
+        open: (req: OpenRequest, frame: FrameSpec) => Promise<void>
+        close: () => Promise<void>
+        /** to: TCP Server에서 특정 클라이언트에게만 보낼 때 */
+        write: (bytes: Uint8Array, to?: string) => Promise<void>
         setFrame: (spec: FrameSpec) => void
-        onFrame: (cb: (f: RxFrame) => void) => () => void
-        onSignals: (cb: (s: Signals) => void) => () => void
-        onClosed: (cb: (reason: string) => void) => () => void
-        onError: (cb: (msg: string) => void) => () => void
+        onFrames: (cb: (f: RxFrame[]) => void) => () => void
+        onEvent: (cb: (e: ConnEvent) => void) => () => void
+        /** 이 PC의 IPv4 주소 */
+        interfaces: () => Promise<string[]>
       }
     }
   }

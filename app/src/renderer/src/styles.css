@@ -298,6 +298,68 @@ input[type='checkbox'] {
   flex-direction: column;
   gap: 4px;
 }
+
+/* 연결 방식별 색 (exe를 여러 개 띄웠을 때 구분용). Serial은 기존 색 그대로 */
+.app[data-conn='tcp-client'] {
+  --conn: #13a8a0;
+}
+.app[data-conn='tcp-server'] {
+  --conn: #e07b22;
+}
+.app[data-conn='udp'] {
+  --conn: #9a5ae0;
+}
+.app:not([data-conn='serial']) .conn-bar {
+  border-left: 5px solid var(--conn);
+}
+.app:not([data-conn='serial']) .connect-btn:not(.connected) {
+  background: var(--conn);
+  border-color: var(--conn);
+}
+.app:not([data-conn='serial']) .conn-kind select {
+  border-color: var(--conn);
+  font-weight: 600;
+}
+.conn-tag {
+  color: var(--conn, var(--accent));
+}
+.host-input {
+  width: 130px;
+  font-family: var(--mono);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.host-list {
+  width: 190px;
+}
+.host-list button {
+  text-align: left;
+}
+.port-input {
+  width: 64px;
+  font-family: var(--mono);
+}
+.check-field .check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  font-size: 12px;
+}
+.peers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+.peers .lamp {
+  width: auto;
+}
+.peers small {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
 .lamps {
   display: flex;
   gap: 8px;

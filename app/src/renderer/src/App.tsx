@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '@/lib/store'
 import { hotkeyFromEvent } from '@/lib/hotkey'
 import { ConnectionBar } from './components/ConnectionBar'
@@ -10,12 +11,33 @@ import { StatusBar } from './components/StatusBar'
 import { MacroEditor } from './components/MacroEditor'
 import { RequestResponseEditor } from './components/RequestResponseEditor'
 import { QuickHelp } from './components/QuickHelp'
+import { t } from '@/lib/i18n'
+import { describeConn } from '@/lib/conn'
+import { CONN_LABEL } from '../../shared/transport'
+
+/** 타이틀바(작업 표시줄)에 연결 방식과 주소를 보여 준다: exe를 여러 개 띄워도 구분되도록 */
+function useWindowTitle(): void {
+  const s = useStore(
+    useShallow((s) => ({ connKind: s.connKind, net: s.net, config: s.config, connected: s.connected, peers: s.peers.length, instance: s.instance, language: s.language }))
+  )
+  useEffect(() => {
+    const inst = s.instance > 1 ? ` #${s.instance}` : ''
+    const state = !s.connected
+      ? t('status.disconnected')
+      : s.connKind === 'tcp-server'
+        ? t('conn.clients', { n: s.peers })
+        : t('status.connected')
+    document.title = `Terminal 2${inst} — [${CONN_LABEL[s.connKind]}] ${describeConn(s.connKind, s.net, s.config)} · ${state}`
+  }, [s])
+}
 
 export function App(): JSX.Element {
   const modal = useStore((s) => s.modal)
   const theme = useStore((s) => s.theme)
   // Re-mount on language change so every t() call re-renders.
   const language = useStore((s) => s.language)
+  const connKind = useStore((s) => s.connKind)
+  useWindowTitle()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -42,7 +64,7 @@ export function App(): JSX.Element {
   }, [])
 
   return (
-    <div className="app" key={language}>
+    <div className="app" key={language} data-conn={connKind}>
       <ConnectionBar />
       <ReceivePanel />
       <Splitter />

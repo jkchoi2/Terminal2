@@ -24,10 +24,5 @@ export interface Signals {
   cd: boolean
 }
 
-export interface RxFrame {
-  bytes: Uint8Array
-  time: number
-}
-
 /** Virtual port handled entirely in the renderer (echoes TX back as RX). */
 export const LOOPBACK_PORT = 'LOOPBACK'

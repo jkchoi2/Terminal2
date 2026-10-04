@@ -1,4 +1,5 @@
 import { BrowserWindow, ipcMain, type Rectangle } from 'electron'
+import { IPC } from '../shared/ipc'
 
 // Chart window + data relay. The main window extracts values from packets and sends
 // them here in batches; they are forwarded to the chart window when it is open.
@@ -18,10 +19,10 @@ export function registerChartIpc(
 ): void {
   const toMain = (msg: unknown): void => {
     const w = mainWindow()
-    if (w && !w.isDestroyed()) w.webContents.send('chart:msg', msg)
+    if (w && !w.isDestroyed()) w.webContents.send(IPC.chartMsg, msg)
   }
 
-  ipcMain.handle('chart:open', (_e, bounds: Rectangle | null, onTop: boolean) => {
+  ipcMain.handle(IPC.chartOpen, (_e, bounds: Rectangle | null, onTop: boolean) => {
     if (chartWin && !chartWin.isDestroyed()) {
       if (chartWin.isMinimized()) chartWin.restore()
       chartWin.focus()
@@ -52,16 +53,16 @@ export function registerChartIpc(
     loadPage(win, 'chart.html')
   })
 
-  ipcMain.on('chart:onTop', (_e, on: boolean) => chartWin?.setAlwaysOnTop(on))
+  ipcMain.on(IPC.chartOnTop, (_e, on: boolean) => chartWin?.setAlwaysOnTop(on))
 
   // Messages between the two windows: whoever sends, the other side receives.
-  ipcMain.on('chart:msg', (e, msg: unknown) => {
+  ipcMain.on(IPC.chartMsg, (e, msg: unknown) => {
     if (chartWin && e.sender === chartWin.webContents) toMain(msg)
-    else if (chartWin && !chartWin.isDestroyed()) chartWin.webContents.send('chart:msg', msg)
+    else if (chartWin && !chartWin.isDestroyed()) chartWin.webContents.send(IPC.chartMsg, msg)
   })
 
-  ipcMain.on('chart:points', (_e, points: Point[]) => {
-    if (chartWin && !chartWin.isDestroyed()) chartWin.webContents.send('chart:points', points)
+  ipcMain.on(IPC.chartPoints, (_e, points: Point[]) => {
+    if (chartWin && !chartWin.isDestroyed()) chartWin.webContents.send(IPC.chartPoints, points)
   })
 }
 

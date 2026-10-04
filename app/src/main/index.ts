@@ -1,14 +1,19 @@
 import { app, BrowserWindow, dialog, ipcMain, type FileFilter } from 'electron'
 import { mkdir, readFile, readdir, rm, writeFile } from 'fs/promises'
 import { join } from 'path'
-import { baseDir, configPath, loadConfig, saveConfig } from './config'
-import { SerialService } from './serial'
+import { baseDir, configPath, loadConfig, saveConfig, setConfigInstance } from './config'
+import { acquireInstance } from './instance'
+import { ConnectionManager, localAddresses } from './transport/manager'
+import { listSerialPorts } from './transport/serial'
 import { closeChart, registerChartIpc } from './chart'
 import type { FrameSpec } from '../shared/frame'
-import type { SerialConfig } from '../shared/serial'
+import { IPC } from '../shared/ipc'
+import type { OpenRequest } from '../shared/transport'
 
 let mainWindow: BrowserWindow | undefined
-const serial = new SerialService(() => mainWindow?.webContents)
+const conn = new ConnectionManager(() => mainWindow?.webContents)
+/** 같은 폴더의 exe 중 몇 번째 실행인지 (타이틀바 표시, 설정 파일 이름) */
+let instance = 1
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -28,7 +33,7 @@ function createWindow(): void {
   })
   mainWindow.on('closed', () => {
     mainWindow = undefined
-    void serial.close()
+    void conn.close()
     closeChart()
   })
   loadPage(mainWindow, 'index.html')
@@ -44,7 +49,7 @@ function loadPage(win: BrowserWindow, page: string): void {
 
 function registerIpc(): void {
   // defaultPath: folder (open) or folder\name (save); the dialogs start there.
-  ipcMain.handle('file:save', async (e, defaultPath: string, content: string, filters: FileFilter[]) => {
+  ipcMain.handle(IPC.fileSave, async (e, defaultPath: string, content: string, filters: FileFilter[]) => {
     const win = BrowserWindow.fromWebContents(e.sender)!
     const r = await dialog.showSaveDialog(win, { defaultPath, filters })
     if (r.canceled || !r.filePath) return null
@@ -52,19 +57,20 @@ function registerIpc(): void {
     return r.filePath
   })
 
-  ipcMain.handle('file:open', async (e, filters: FileFilter[], defaultPath?: string) => {
+  ipcMain.handle(IPC.fileOpen, async (e, filters: FileFilter[], defaultPath?: string) => {
     const win = BrowserWindow.fromWebContents(e.sender)!
     const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters, defaultPath })
     if (r.canceled || r.filePaths.length === 0) return null
     return { path: r.filePaths[0], content: await readFile(r.filePaths[0], 'utf8') }
   })
 
-  ipcMain.handle('file:write', (_e, path: string, content: string) => writeFile(path, content, 'utf8'))
+  ipcMain.handle(IPC.fileWrite, (_e, path: string, content: string) => writeFile(path, content, 'utf8'))
 
-  ipcMain.handle('app:baseDir', () => baseDir())
+  ipcMain.handle(IPC.baseDir, () => baseDir())
+  ipcMain.handle(IPC.instance, () => instance)
 
   // Keeps the newest 20 backups per kind in <baseDir>/backup.
-  ipcMain.handle('backup:write', async (_e, kind: string, content: string) => {
+  ipcMain.handle(IPC.backup, async (_e, kind: string, content: string) => {
     const dir = join(baseDir(), 'backup')
     await mkdir(dir, { recursive: true })
     const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15)
@@ -73,25 +79,24 @@ function registerIpc(): void {
     await Promise.all(old.map((f) => rm(join(dir, f), { force: true })))
   })
 
-  ipcMain.handle('dialog:ask', async (e, message: string, detail: string, buttons: string[]) => {
+  ipcMain.handle(IPC.ask, async (e, message: string, detail: string, buttons: string[]) => {
     const win = BrowserWindow.fromWebContents(e.sender)!
     const r = await dialog.showMessageBox(win, { type: 'question', message, detail, buttons, cancelId: buttons.length - 1, noLink: true })
     return r.response
   })
 
-  ipcMain.handle('config:load', async () => ({ content: await loadConfig(), path: configPath() }))
-  ipcMain.handle('config:save', (_e, content: string) => saveConfig(content))
+  ipcMain.handle(IPC.configLoad, async () => ({ content: await loadConfig(), path: configPath() }))
+  ipcMain.handle(IPC.configSave, (_e, content: string) => saveConfig(content))
 
-  ipcMain.handle('serial:list', () => serial.list())
-  ipcMain.handle('serial:open', (_e, cfg: SerialConfig, frame: FrameSpec, lines: { dtr: boolean; rts: boolean }) =>
-    serial.open(cfg, frame, lines)
-  )
-  ipcMain.handle('serial:close', () => serial.close())
-  ipcMain.handle('serial:write', (_e, bytes: Uint8Array) => serial.write(bytes))
-  ipcMain.handle('serial:lines', (_e, lines: { dtr?: boolean; rts?: boolean }) => serial.setLines(lines))
-  ipcMain.on('serial:frame-spec', (_e, spec: FrameSpec) => serial.setFrame(spec))
+  ipcMain.handle(IPC.serialList, () => listSerialPorts())
+  ipcMain.handle(IPC.serialLines, (_e, lines: { dtr?: boolean; rts?: boolean }) => conn.setLines(lines))
+  ipcMain.handle(IPC.connOpen, (_e, req: OpenRequest, frame: FrameSpec) => conn.open(req, frame))
+  ipcMain.handle(IPC.connClose, () => conn.close())
+  ipcMain.handle(IPC.connWrite, (_e, bytes: Uint8Array, to?: string) => conn.write(bytes, to))
+  ipcMain.on(IPC.connFrameSpec, (_e, spec: FrameSpec) => conn.setFrame(spec))
+  ipcMain.handle(IPC.netInterfaces, () => localAddresses())
 
-  ipcMain.on('app:quit', () => app.quit())
+  ipcMain.on(IPC.quit, () => app.quit())
 
   registerChartIpc(() => mainWindow, loadPage, PRELOAD)
 }
@@ -99,6 +104,8 @@ function registerIpc(): void {
 app.whenReady().then(() => {
   // Groups the taskbar button under the exe's own icon on Windows.
   app.setAppUserModelId('com.terminal2.app')
+  instance = acquireInstance(baseDir())
+  setConfigInstance(instance)
   registerIpc()
   createWindow()
   app.on('activate', () => {

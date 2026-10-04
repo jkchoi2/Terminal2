@@ -1,32 +1,37 @@
 import { SerialPort } from 'serialport'
-import type { WebContents } from 'electron'
-import { Framer, type FrameSpec } from '../shared/frame'
-import type { PortInfo, SerialConfig, Signals } from '../shared/serial'
+import { Framer, type FrameSpec } from '../../shared/frame'
+import type { PortInfo, SerialConfig, Signals } from '../../shared/serial'
+import type { Transport, TransportSink } from './types'
 
 const SIGNAL_POLL_MS = 200
 
-/** One open serial port; frames and status are pushed to the renderer over IPC. */
-export class SerialService {
+export async function listSerialPorts(): Promise<PortInfo[]> {
+  const ports = await SerialPort.list()
+  return ports
+    .map((p) => {
+      const friendly = (p as { friendlyName?: string }).friendlyName
+      const description = (friendly ?? p.manufacturer ?? '').replace(/\s*\(COM\d+\)\s*$/, '')
+      return { path: p.path, description }
+    })
+    .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
+}
+
+/** 시리얼 포트 하나. DTR/RTS 설정과 CTS/DSR/CD 감시는 시리얼에만 있다. */
+export class SerialTransport implements Transport {
   private port?: SerialPort
   private framer?: Framer
   private pollTimer?: ReturnType<typeof setInterval>
   private lastSignals = ''
 
-  constructor(private readonly web: () => WebContents | undefined) {}
+  constructor(
+    private readonly cfg: SerialConfig,
+    private frameSpec: FrameSpec,
+    private readonly lines: { dtr: boolean; rts: boolean },
+    private readonly sink: TransportSink
+  ) {}
 
-  async list(): Promise<PortInfo[]> {
-    const ports = await SerialPort.list()
-    return ports
-      .map((p) => {
-        const friendly = (p as { friendlyName?: string }).friendlyName
-        const description = (friendly ?? p.manufacturer ?? '').replace(/\s*\(COM\d+\)\s*$/, '')
-        return { path: p.path, description }
-      })
-      .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
-  }
-
-  async open(cfg: SerialConfig, frame: FrameSpec, lines: { dtr: boolean; rts: boolean }): Promise<void> {
-    await this.close()
+  async open(): Promise<void> {
+    const { cfg } = this
     const port = new SerialPort({
       path: cfg.port,
       baudRate: cfg.baudRate,
@@ -40,18 +45,21 @@ export class SerialService {
     })
     await new Promise<void>((resolve, reject) => port.open((err) => (err ? reject(err) : resolve())))
     this.port = port
-    this.framer = new Framer(frame, (bytes, time) => this.send('serial:frame', { bytes, time }))
+    this.framer = new Framer(this.frameSpec, (bytes, time) => this.sink.frame({ bytes, time }))
 
     port.on('data', (chunk: Buffer) => this.framer?.push(chunk))
-    port.on('error', (err: Error) => this.send('serial:error', err.message))
+    port.on('error', (err: Error) => this.sink.event({ type: 'error', message: err.message }))
     port.on('close', (err?: { disconnected?: boolean; message?: string }) => {
-      // Fires for both our own close() and an unplugged device.
+      // 직접 close()한 경우와 장치가 뽑힌 경우 모두 호출된다.
       if (this.port !== port) return
+      this.framer?.flush()
       this.cleanup()
-      this.send('serial:closed', err?.disconnected ? 'disconnected' : (err?.message ?? 'closed'))
+      this.sink.event(
+        err?.disconnected ? { type: 'closed', code: 'unplugged' } : { type: 'closed', code: 'error', message: err?.message ?? 'closed' }
+      )
     })
 
-    await this.setLines({ dtr: lines.dtr, rts: cfg.handshake === 'rtscts' ? undefined : lines.rts })
+    await this.setLines({ dtr: this.lines.dtr, rts: cfg.handshake === 'rtscts' ? undefined : this.lines.rts })
     this.lastSignals = ''
     this.pollTimer = setInterval(() => void this.pollSignals(), SIGNAL_POLL_MS)
   }
@@ -82,6 +90,7 @@ export class SerialService {
   }
 
   setFrame(spec: FrameSpec): void {
+    this.frameSpec = spec
     this.framer?.setSpec(spec)
   }
 
@@ -95,7 +104,7 @@ export class SerialService {
     const key = JSON.stringify(s)
     if (key !== this.lastSignals) {
       this.lastSignals = key
-      this.send('serial:signals', s)
+      this.sink.event({ type: 'signals', signals: s })
     }
   }
 
@@ -105,10 +114,5 @@ export class SerialService {
     this.port?.removeAllListeners('data')
     this.port = undefined
     this.framer = undefined
-  }
-
-  private send(channel: string, payload: unknown): void {
-    const wc = this.web()
-    if (wc && !wc.isDestroyed()) wc.send(channel, payload)
   }
 }

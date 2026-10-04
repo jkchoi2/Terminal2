@@ -29,6 +29,23 @@ export function HelpEn(): JSX.Element {
         <p>
           <b>LOOPBACK (demo)</b> echoes everything you send, for trying macros and R/R without a device.
         </p>
+        <p>
+          <b>Connection</b> switches from Serial to a network connection. The log, macros, R/R and charts work the same way for
+          every connection type.
+        </p>
+        <Table
+          rows={[
+            ['TCP Client', 'Connects to a server at Remote IP and port. If the other side closes, it is logged and the connection ends'],
+            ['TCP Server', 'Waits for clients on Bind IP (0.0.0.0 = all adapters) and port. Several clients may connect; sending goes to all of them, received lines start with [sender IP:port], and R/R replies only to the client that asked'],
+            ['UDP', 'Receives on Local IP/port and sends to Remote IP/port. Broadcast sends to 255.255.255.255. One datagram is one packet']
+          ]}
+        />
+        <p>
+          The ▾ next to an address lists recently used addresses (20 per type). When you run several copies, say one server and one
+          client, the title bar shows the connection type and address and the top bar is colored per type. The second copy shows
+          <code>#2</code> in its title and keeps its settings in <code>Config-Terminal2-2.json</code> (copied from the first one at
+          first start).
+        </p>
       </Section>
 
       <Section id="frame" title="3. Packet framing">

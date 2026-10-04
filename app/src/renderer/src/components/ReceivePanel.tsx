@@ -52,7 +52,8 @@ function layout(log: LogEntry[], view: RxView): Line[] {
       lines.push({ key: e.id * 1000, time: e.time, dir: 'sys', bytes: [], text: e.text })
       continue
     }
-    if (e.dir === 'tx' || st.cur?.dir !== e.dir) st.cur = null
+    // 보낸 쪽(TCP Server/UDP의 IP:port)이 바뀌어도 줄을 바꾼다.
+    if (e.dir === 'tx' || st.cur?.dir !== e.dir || st.cur.label !== e.text) st.cur = null
     // Binary packets may contain 0x0A as data; only text breaks on LF.
     const breakOnLf = view.mode === 'ascii' && isText(e.bytes)
     for (const b of e.bytes) {

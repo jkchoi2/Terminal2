@@ -14,6 +14,8 @@ import { defaultCharts, normalizeCharts } from './chartDefaults'
 import { makeExtractor, type Extractor } from './extract'
 import { sampleText } from './logFormat'
 import type { ChartMsg } from './chartMsg'
+import { CONN_LABEL, DEFAULT_NET, type ConnEvent, type ConnKind, type NetConfig, type NetKind } from '../../../shared/transport'
+import { describeConn, endpointOf, MAX_RECENT_ENDPOINTS, openRequest, validateConn } from './conn'
 
 const MAX_LOG = 5000
 const CONFIG_VERSION = 3
@@ -46,7 +48,12 @@ export type ModalKind = null | 'macros' | 'rr' | 'help'
 
 /** Everything stored in Config-Terminal2.json. */
 export interface Snapshot {
+  /** 연결 방식 (Serial / TCP Client / TCP Server / UDP) */
+  connKind: ConnKind
   config: SerialConfig
+  net: NetConfig
+  /** 방식별 최근 "IP:port" (최대 20개) */
+  recentEndpoints: Record<NetKind, string[]>
   rx: RxView
   frame: FrameSpec
   macros: Macro[]
@@ -75,6 +82,12 @@ export interface Snapshot {
 
 interface State extends Snapshot {
   ports: PortInfo[]
+  /** TCP Server에 접속 중인 클라이언트 "IP:port" */
+  peers: string[]
+  /** 이 PC의 IPv4 주소 (바인딩 주소 선택용) */
+  interfaces: string[]
+  /** 같은 폴더 exe 중 몇 번째 실행인지 */
+  instance: number
   connected: boolean
   busy: boolean
   lines: Lines
@@ -89,6 +102,9 @@ interface State extends Snapshot {
   lastRx: Uint8Array | null
 
   setConfig: (patch: Partial<SerialConfig>) => void
+  setConnKind: (k: ConnKind) => void
+  setNet: (patch: Partial<NetConfig>) => void
+  loadInterfaces: () => Promise<void>
   rememberBaud: (b: number) => void
   rescan: () => Promise<void>
   toggleConnect: () => Promise<void>
@@ -114,9 +130,9 @@ interface State extends Snapshot {
   quit: () => Promise<void>
   openChart: () => void
   sendChartSample: (bytes: Uint8Array, open?: boolean) => void
-  /** Serial event entry points (called from initApp). */
-  handleFrame: (bytes: Uint8Array, time: number) => void
-  handleClosed: (message: string) => void
+  /** 연결 이벤트 입구 (initApp에서 호출) */
+  handleFrame: (bytes: Uint8Array, time: number, peer?: string) => void
+  handleEvent: (e: ConnEvent) => void
 }
 
 const timers = new Map<number, ReturnType<typeof setInterval>>()
@@ -281,7 +297,13 @@ const errMsg = (e: unknown): string => (e instanceof Error ? e.message : String(
 export const useStore = create<State>((set, get) => {
   const pushSys = (text: string): void => queueLog(entry('sys', new Uint8Array(), text))
 
-  const isLoopback = (): boolean => get().config.port === LOOPBACK_PORT
+  const isLoopback = (): boolean => get().connKind === 'serial' && get().config.port === LOOPBACK_PORT
+  const isSerial = (): boolean => get().connKind === 'serial'
+  /** 로그용 "TCP Client → 1.2.3.4:5" */
+  const connName = (): string => {
+    const s = get()
+    return `${CONN_LABEL[s.connKind]} ${describeConn(s.connKind, s.net, s.config)}`
+  }
 
   const logTx = (bytes: Uint8Array, label?: string): void => queueLog(entry('tx', bytes, label), 0, bytes.length)
 
@@ -307,8 +329,8 @@ export const useStore = create<State>((set, get) => {
     })
   }
 
-  /** Writes to the port (or loopback) and logs on success. */
-  const transmit = async (bytes: Uint8Array, label?: string, echo = true): Promise<boolean> => {
+  /** Writes to the port (or loopback) and logs on success. to: TCP Server에서 한 클라이언트에게만 보낼 때 */
+  const transmit = async (bytes: Uint8Array, label?: string, echo = true, to?: string): Promise<boolean> => {
     if (!get().connected) {
       pushSys(t('log.notConnected'))
       return false
@@ -318,9 +340,13 @@ export const useStore = create<State>((set, get) => {
       if (echo) setTimeout(() => get().connected && receive(bytes, Date.now()), 20)
       return true
     }
+    if (get().connKind === 'tcp-server' && get().peers.length === 0) {
+      pushSys(t('log.noClients'))
+      return false
+    }
     try {
-      await window.api.serial.write(bytes)
-      logTx(bytes, label)
+      await window.api.conn.write(bytes, to)
+      logTx(bytes, to ? `${label ?? ''} → ${to}`.trim() : label)
       return true
     } catch (e) {
       pushSys(t('log.writeError', { msg: errMsg(e) }))
@@ -328,8 +354,8 @@ export const useStore = create<State>((set, get) => {
     }
   }
 
-  const receive = (frame: Uint8Array, time: number): void => {
-    queueLog(entry('rx', frame, undefined, time), frame.length)
+  const receive = (frame: Uint8Array, time: number, peer?: string): void => {
+    queueLog(entry('rx', frame, peer, time), frame.length)
     pending.lastRx = frame
     chartPacket(frame, time)
     // R/R is matched right away (not batched) so replies are not delayed.
@@ -343,14 +369,16 @@ export const useStore = create<State>((set, get) => {
       const res = buildPacket(r.response, frame)
       if (res.error) return pushSys(t('log.rrError', { name: r.name, msg: res.error }))
       // R/R replies are never echoed back on loopback, so rules cannot trigger each other forever.
-      setTimeout(() => void transmit(res.bytes, `R/R ${r.name}`, false), r.delayMs)
+      // TCP Server는 요청한 클라이언트에게만 응답한다.
+      const to = get().connKind === 'tcp-server' ? peer : undefined
+      setTimeout(() => void transmit(res.bytes, `R/R ${r.name}`, false, to), r.delayMs)
       return
     }
   }
 
   const markClosed = (reason?: string): void => {
     get().stopAllMacros()
-    set((s) => ({ connected: false, lines: { ...s.lines, cts: false, dsr: false, cd: false } }))
+    set((s) => ({ connected: false, peers: [], lines: { ...s.lines, cts: false, dsr: false, cd: false } }))
     if (reason) pushSys(reason)
   }
 
@@ -368,6 +396,12 @@ export const useStore = create<State>((set, get) => {
   }
 
   return {
+    connKind: 'serial',
+    net: DEFAULT_NET,
+    recentEndpoints: { 'tcp-client': [], 'tcp-server': [], udp: [] },
+    peers: [],
+    interfaces: [],
+    instance: 1,
     config: { port: 'COM1', baudRate: 9600, dataBits: 8, stopBits: 1, parity: 'none', handshake: 'none' },
     ports: [],
     connected: false,
@@ -405,6 +439,19 @@ export const useStore = create<State>((set, get) => {
     lastRx: null,
 
     setConfig: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
+    setConnKind: (connKind) => {
+      if (get().connected || get().busy) return
+      set({ connKind })
+      if (connKind !== 'serial') void get().loadInterfaces()
+    },
+    setNet: (patch) => set((s) => ({ net: { ...s.net, ...patch } })),
+    loadInterfaces: async () => {
+      try {
+        set({ interfaces: await window.api.conn.interfaces() })
+      } catch {
+        // 목록을 못 얻어도 직접 입력한 주소로 연결할 수 있다.
+      }
+    },
     rememberBaud: (b) => {
       if (BAUD_PRESETS.includes(b)) return
       set((s) => ({ recentBauds: [b, ...s.recentBauds.filter((x) => x !== b)].slice(0, 5) }))
@@ -424,11 +471,33 @@ export const useStore = create<State>((set, get) => {
     },
 
     toggleConnect: async () => {
-      const { connected, config, frame, busy } = get()
+      const { connected, config, frame, busy, connKind, net } = get()
       if (busy) return
       if (connected) {
-        if (!isLoopback()) await window.api.serial.close().catch(() => undefined)
-        markClosed(t('log.closed', { port: config.port }))
+        if (!isLoopback()) await window.api.conn.close().catch(() => undefined)
+        markClosed(isSerial() ? t('log.closed', { port: config.port }) : t('log.netClosed', { name: connName() }))
+        return
+      }
+      if (connKind !== 'serial') {
+        const err = validateConn(connKind, net)
+        if (err) return pushSys(err)
+        set({ busy: true })
+        try {
+          await window.api.conn.open(openRequest(connKind, net, config, { dtr: false, rts: false }), frame)
+          set({ connected: true, peers: [] })
+          pushSys(t(connKind === 'tcp-server' ? 'log.serverOpened' : 'log.netOpened', { name: connName() }))
+          const ep = endpointOf(connKind, net)
+          set((s) => ({
+            recentEndpoints: {
+              ...s.recentEndpoints,
+              [connKind]: [ep, ...s.recentEndpoints[connKind].filter((x) => x !== ep)].slice(0, MAX_RECENT_ENDPOINTS)
+            }
+          }))
+        } catch (e) {
+          pushSys(t('log.netOpenError', { name: connName(), msg: errMsg(e) }))
+        } finally {
+          set({ busy: false })
+        }
         return
       }
       const lines = { dtr: get().dtr, rts: get().rts }
@@ -439,7 +508,7 @@ export const useStore = create<State>((set, get) => {
       }
       set({ busy: true })
       try {
-        await window.api.serial.open(config, frame, lines)
+        await window.api.conn.open(openRequest('serial', net, config, lines), frame)
         set((s) => ({ connected: true, lines: { ...s.lines, ...lines } }))
         pushSys(t('log.opened', { port: config.port, baud: config.baudRate }))
       } catch (e) {
@@ -452,14 +521,14 @@ export const useStore = create<State>((set, get) => {
     toggleLine: (k) => {
       const v = !get()[k]
       set((s) => ({ [k]: v, lines: { ...s.lines, [k]: v } }))
-      if (get().connected && !isLoopback()) {
+      if (get().connected && isSerial() && !isLoopback()) {
         window.api.serial.setLines({ [k]: v }).catch((e) => pushSys(t('log.lineError', { msg: errMsg(e) })))
       }
     },
     setRx: (patch) => set((s) => ({ rx: { ...s.rx, ...patch } })),
     setFrame: (patch) => {
       set((s) => ({ frame: { ...s.frame, ...patch } }))
-      if (get().connected && !isLoopback()) window.api.serial.setFrame(get().frame)
+      if (get().connected && !isLoopback()) window.api.conn.setFrame(get().frame)
     },
     clearLog: () => {
       pending.log = []
@@ -530,6 +599,7 @@ export const useStore = create<State>((set, get) => {
     snapshot: () => {
       const s = get()
       return {
+        connKind: s.connKind, net: s.net, recentEndpoints: s.recentEndpoints,
         config: s.config, rx: s.rx, frame: s.frame, macros: s.macros, rrEnabled: s.rrEnabled,
         rules: s.rules, theme: s.theme, recentBauds: s.recentBauds, macroPaneHeight: s.macroPaneHeight,
         language: s.language, encoding: s.encoding, dtr: s.dtr, rts: s.rts,
@@ -550,6 +620,8 @@ export const useStore = create<State>((set, get) => {
       set((s) => ({
         ...snap,
         config: { ...s.config, ...snap.config },
+        net: { ...s.net, ...snap.net },
+        recentEndpoints: { ...s.recentEndpoints, ...snap.recentEndpoints },
         rx: { ...s.rx, ...snap.rx },
         frame: { ...s.frame, ...snap.frame },
         macros: macros ?? s.macros,
@@ -577,11 +649,32 @@ export const useStore = create<State>((set, get) => {
       else pendingSample = msg
     },
 
-    handleFrame: (bytes, time) => {
-      if (get().connected && !isLoopback()) receive(bytes, time)
+    handleFrame: (bytes, time, peer) => {
+      if (get().connected && !isLoopback()) receive(bytes, time, peer)
     },
-    handleClosed: (message) => {
-      if (get().connected && !isLoopback()) markClosed(message)
+    handleEvent: (e) => {
+      if (!get().connected || isLoopback()) return
+      const port = get().config.port
+      switch (e.type) {
+        case 'closed':
+          if (isSerial()) {
+            markClosed(e.code === 'unplugged' ? t('log.unplugged', { port }) : t('log.closedReason', { port, reason: e.message ?? '' }))
+          } else {
+            markClosed(t(e.code === 'remote' ? 'log.remoteClosed' : 'log.netClosed', { name: connName() }))
+          }
+          break
+        case 'error':
+          pushSys(t(isSerial() ? 'log.portError' : 'log.connError', { msg: e.message }))
+          break
+        case 'clientJoin':
+        case 'clientLeave':
+          set({ peers: e.clients })
+          pushSys(t(e.type === 'clientJoin' ? 'log.clientJoin' : 'log.clientLeave', { peer: e.peer, n: e.clients.length }))
+          break
+        case 'signals':
+          set((s) => ({ lines: { ...s.lines, ...e.signals } }))
+          break
+      }
     }
   }
 })
@@ -605,7 +698,7 @@ async function saveNow(): Promise<void> {
   }
 }
 
-/** Loads Config-Terminal2.json, keeps it saved on every change, and wires serial events. */
+/** Loads Config-Terminal2.json, keeps it saved on every change, and wires connection events. */
 export async function initApp(): Promise<void> {
   const store = useStore.getState()
   try {
@@ -621,16 +714,13 @@ export async function initApp(): Promise<void> {
   setLang(useStore.getState().language)
   setEncoding(useStore.getState().encoding)
 
-  const api = window.api.serial
-  api.onFrame((f) => useStore.getState().handleFrame(f.bytes, f.time))
-  api.onSignals((sig) => useStore.setState((s) => ({ lines: { ...s.lines, ...sig } })))
-  api.onClosed((reason) => {
-    const port = useStore.getState().config.port
-    useStore
-      .getState()
-      .handleClosed(reason === 'disconnected' ? t('log.unplugged', { port }) : t('log.closedReason', { port, reason }))
+  window.api.conn.onFrames((frames) => {
+    const s = useStore.getState()
+    for (const f of frames) s.handleFrame(f.bytes, f.time, f.peer)
   })
-  api.onError((msg) => useStore.setState((s) => ({ log: appendLog(s.log, entry('sys', new Uint8Array(), t('log.portError', { msg }))) })))
+  window.api.conn.onEvent((e) => useStore.getState().handleEvent(e))
+  useStore.setState({ instance: await window.api.instance().catch(() => 1) })
+  void useStore.getState().loadInterfaces()
 
   wireChart()
   await useStore.getState().rescan()

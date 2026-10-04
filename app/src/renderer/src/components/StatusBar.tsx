@@ -4,6 +4,8 @@ import { useStore } from '@/lib/store'
 import { t, type Lang } from '@/lib/i18n'
 import type { TextEncoding } from '@/lib/encoding'
 import { LOOPBACK_PORT } from '../../../shared/serial'
+import { CONN_LABEL } from '../../../shared/transport'
+import { describeConn } from '@/lib/conn'
 
 /** Flashes briefly whenever `count` changes (data activity indicator). */
 function ActivityLed({ count, label, kind }: { count: number; label: string; kind: 'rx' | 'tx' }): JSX.Element {
@@ -23,7 +25,7 @@ function ActivityLed({ count, label, kind }: { count: number; label: string; kin
 }
 
 export function StatusBar(): JSX.Element {
-  const { connected, config, rxCount, txCount, rrEnabled, theme, language, encoding, configPath } = useStore(useShallow((s) => ({ connected: s.connected, config: s.config, rxCount: s.rxCount, txCount: s.txCount, rrEnabled: s.rrEnabled, theme: s.theme, language: s.language, encoding: s.encoding, configPath: s.configPath })))
+  const { connected, connKind, net, config, rxCount, txCount, rrEnabled, theme, language, encoding, configPath } = useStore(useShallow((s) => ({ connected: s.connected, connKind: s.connKind, net: s.net, config: s.config, rxCount: s.rxCount, txCount: s.txCount, rrEnabled: s.rrEnabled, theme: s.theme, language: s.language, encoding: s.encoding, configPath: s.configPath })))
   const { resetCounters, toggleTheme, setLanguage, setTextEncoding } = useStore(useShallow((s) => ({ resetCounters: s.resetCounters, toggleTheme: s.toggleTheme, setLanguage: s.setLanguage, setTextEncoding: s.setTextEncoding })))
   const frame = `${config.dataBits}${config.parity[0].toUpperCase()}${config.stopBits}`
   const flow = { none: '', rtscts: ' · RTS/CTS', xonxoff: ' · XON/XOFF' }[config.handshake]
@@ -32,10 +34,16 @@ export function StatusBar(): JSX.Element {
   return (
     <footer className="status-bar">
       <span className={`status ${connected ? 'ok' : ''}`}>{connected ? t('status.connected') : t('status.disconnected')}</span>
-      <span>
-        {port} · {config.baudRate.toLocaleString()} bps · {frame}
-        {flow}
-      </span>
+      {connKind === 'serial' ? (
+        <span>
+          {port} · {config.baudRate.toLocaleString()} bps · {frame}
+          {flow}
+        </span>
+      ) : (
+        <span>
+          <b className="conn-tag">{CONN_LABEL[connKind]}</b> {describeConn(connKind, net, config)}
+        </span>
+      )}
       <ActivityLed count={rxCount} label="Rx" kind="rx" />
       <ActivityLed count={txCount} label="Tx" kind="tx" />
       <button className="link" onClick={resetCounters}>
