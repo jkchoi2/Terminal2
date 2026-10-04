@@ -1,0 +1,7 @@
+node_modules
+out
+dist
+Config.json
+Config.bak.json
+Config-Terminal2.json
+Config-Terminal2.bak.json

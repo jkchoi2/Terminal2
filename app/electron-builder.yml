@@ -1,0 +1,21 @@
+appId: com.terminal2.app
+productName: Terminal2
+copyright: Copyright © 2026 utotech
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+  - package.json
+# serialport's native binding must live outside the asar archive.
+asarUnpack:
+  - "**/node_modules/@serialport/bindings-cpp/**"
+npmRebuild: false
+win:
+  target: dir
+  icon: build/icon.ico
+  signAndEditExecutable: true
+# Only the UI languages this app ships.
+electronLanguages:
+  - ko
+  - en-US
