@@ -409,6 +409,8 @@ export const en: Record<MsgKey, string> = {
   'shortcut.title': 'Create desktop shortcut',
 
   'status.activity': '{label} activity',
+  'status.bgFullTip': 'Keep speed when minimized: ON — file send, periodic macros and the receive view stay fast while the window is minimized or hidden. Click to turn off (saves CPU, but sending slows to about once a second)',
+  'status.bgThrottledTip': 'Keep speed when minimized: OFF — minimizing saves CPU, but file send and periodic macros slow to about once a second. Click to turn on',
   'status.connected': 'Connected',
   'status.disconnected': 'Disconnected',
   'status.encodingTip': 'Character encoding for ASCII mode',

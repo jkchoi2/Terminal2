@@ -52,6 +52,10 @@ declare global {
       /** Returns the path actually written */
       saveConfig: (content: string) => Promise<string>
       quit: () => void
+      /** 창 ✕로 닫을 때 main이 보내는 정리 요청 */
+      onQuitRequest: (cb: () => void) => () => void
+      /** 최소화 시 백그라운드 쓰로틀링 켜기/끄기 */
+      setThrottle: (on: boolean) => void
       chart: {
         open: (bounds: WindowBounds | null, onTop: boolean) => Promise<void>
         setOnTop: (on: boolean) => void

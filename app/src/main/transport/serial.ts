@@ -4,6 +4,8 @@ import type { PortInfo, SerialConfig, Signals } from '../../shared/serial'
 import type { Transport, TransportSink } from './types'
 
 const SIGNAL_POLL_MS = 200
+/** 포트 닫기를 이보다 오래 기다리지 않음 (네이티브 쪽이 멈춰도 종료가 막히지 않도록) */
+const CLOSE_TIMEOUT_MS = 1500
 
 export async function listSerialPorts(): Promise<PortInfo[]> {
   const ports = await SerialPort.list()
@@ -64,18 +66,29 @@ export class SerialTransport implements Transport {
     this.pollTimer = setInterval(() => void this.pollSignals(), SIGNAL_POLL_MS)
   }
 
+  /**
+   * 포트를 닫는다. 보내는 중이던 데이터는 버리고(flush) 닫아서, 쓰기·drain이 걸려 있어도 닫기가 막히지 않게 한다.
+   * (포트를 연 채로 프로그램이 끝나면 serialport 네이티브 모듈이 win32 예외로 죽는다.)
+   */
   async close(): Promise<void> {
     const port = this.port
     if (!port) return
     this.framer?.flush()
     this.cleanup()
-    if (port.isOpen) await new Promise<void>((resolve) => port.close(() => resolve()))
+    if (!port.isOpen) return
+    const done = new Promise<void>((resolve) => {
+      port.flush(() => port.close(() => resolve()))
+    })
+    await Promise.race([done, new Promise<void>((r) => setTimeout(r, CLOSE_TIMEOUT_MS))])
+    port.removeAllListeners()
   }
 
   async write(bytes: Uint8Array): Promise<void> {
     const port = this.port
     if (!port?.isOpen) throw new Error('port not open')
     await new Promise<void>((resolve, reject) => port.write(Buffer.from(bytes), (err) => (err ? reject(err) : resolve())))
+    // 닫히는 중인 포트의 drain은 기다리지 않는다.
+    if (this.port !== port || !port.isOpen) return
     await new Promise<void>((resolve, reject) => port.drain((err) => (err ? reject(err) : resolve())))
   }
 

@@ -11,6 +11,8 @@ import type { Transport, TransportSink } from './types'
 
 /** 수신 패킷을 모아서 renderer로 보내는 간격 */
 const FRAME_BATCH_MS = 16
+/** 연결 닫기를 이보다 오래 기다리지 않음 (종료가 막히지 않도록) */
+const CLOSE_GUARD_MS = 2000
 
 /** 현재 연결 하나를 관리하고, 수신 데이터와 이벤트를 renderer로 전달한다. */
 export class ConnectionManager {
@@ -36,7 +38,7 @@ export class ConnectionManager {
 
   async close(): Promise<void> {
     const t = this.current
-    if (t) await t.close()
+    if (t) await Promise.race([t.close().catch(() => undefined), new Promise<void>((r) => setTimeout(r, CLOSE_GUARD_MS))])
     if (this.current === t) this.current = undefined
     this.flushFrames()
   }
@@ -44,6 +46,11 @@ export class ConnectionManager {
   async write(bytes: Uint8Array, to?: string): Promise<void> {
     if (!this.current) throw new Error('not connected')
     await this.current.write(bytes, to)
+  }
+
+  /** 열린 연결이 있는지 (종료 처리용) */
+  get isOpen(): boolean {
+    return !!this.current || !!this.opening
   }
 
   setFrame(spec: FrameSpec): void {

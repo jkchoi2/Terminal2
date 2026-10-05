@@ -47,7 +47,8 @@ export function initialSnapshot(): Snapshot {
     chartsFile: null,
     logEnabled: false,
     logRetentionDays: 30,
-    fileSend: DEFAULT_FILE_SEND
+    fileSend: DEFAULT_FILE_SEND,
+    bgThrottle: false
   }
 }
 
@@ -93,6 +94,12 @@ export async function startApp(api: StoreApi<State>): Promise<void> {
     for (const f of frames) s.handleFrame(f.bytes, f.time, f.peer)
   })
   window.api.conn.onEvent((e) => api.getState().handleEvent(e))
+  // ✕로 닫을 때도 종료 버튼과 같은 정리(전송 중지, 연결 닫기, 설정 저장)
+  window.api.onQuitRequest(() => void api.getState().quit())
+  window.api.setThrottle(api.getState().bgThrottle)
+  api.subscribe((s, prev) => {
+    if (s.bgThrottle !== prev.bgThrottle) window.api.setThrottle(s.bgThrottle)
+  })
   api.setState(await window.api.instance().catch(() => ({ instance: 1, profile: '' })))
   void api.getState().loadInterfaces()
 

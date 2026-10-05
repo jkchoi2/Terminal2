@@ -38,7 +38,7 @@ export function registerChartIpc(
       title: 'Terminal 2 - Chart',
       autoHideMenuBar: true,
       alwaysOnTop: onTop,
-      webPreferences: { preload, contextIsolation: true, sandbox: false }
+      webPreferences: { preload, contextIsolation: true, sandbox: false, backgroundThrottling: !!mainWindow()?.webContents.getBackgroundThrottling() }
     })
     chartWin = win
     const sendBounds = (): void => {

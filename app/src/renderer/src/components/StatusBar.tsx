@@ -26,7 +26,8 @@ function ActivityLed({ count, label, kind }: { count: number; label: string; kin
 
 export function StatusBar(): JSX.Element {
   const { connected, connKind, net, config, rxCount, txCount, rrEnabled, theme, language, encoding, configPath } = useStore(useShallow((s) => ({ connected: s.connected, connKind: s.connKind, net: s.net, config: s.config, rxCount: s.rxCount, txCount: s.txCount, rrEnabled: s.rrEnabled, theme: s.theme, language: s.language, encoding: s.encoding, configPath: s.configPath })))
-  const { resetCounters, toggleTheme, setLanguage, setTextEncoding } = useStore(useShallow((s) => ({ resetCounters: s.resetCounters, toggleTheme: s.toggleTheme, setLanguage: s.setLanguage, setTextEncoding: s.setTextEncoding })))
+  const { resetCounters, toggleTheme, setLanguage, setTextEncoding, toggleBgThrottle } = useStore(useShallow((s) => ({ resetCounters: s.resetCounters, toggleTheme: s.toggleTheme, setLanguage: s.setLanguage, setTextEncoding: s.setTextEncoding, toggleBgThrottle: s.toggleBgThrottle })))
+  const bgThrottle = useStore((s) => s.bgThrottle)
   const frame = `${config.dataBits}${config.parity[0].toUpperCase()}${config.stopBits}`
   const flow = { none: '', rtscts: ' · RTS/CTS', xonxoff: ' · XON/XOFF' }[config.handshake]
   const port = config.port === LOOPBACK_PORT ? 'LOOPBACK' : config.port
@@ -62,6 +63,14 @@ export function StatusBar(): JSX.Element {
         <option value="ko">한국어</option>
         <option value="en">English</option>
       </select>
+      {/* 최소화 시 백그라운드 쓰로틀링: 켜짐(⚡ 강조) = 최소화해도 속도 유지 */}
+      <button
+        className={`icon-btn bg-btn${bgThrottle ? '' : ' on'}`}
+        onClick={toggleBgThrottle}
+        title={bgThrottle ? t('status.bgThrottledTip') : t('status.bgFullTip')}
+      >
+        ⚡
+      </button>
       <button className="icon-btn theme-btn" onClick={toggleTheme} title={t('status.themeTip')}>
         {theme === 'dark' ? '☀' : '☾'}
       </button>

@@ -8,7 +8,11 @@ import { dropPendingLog } from './logQueue'
 import { saveNow } from './persist'
 import type { GetState, SetState, UiState } from './types'
 
+/** 종료 전에 마지막 로그 줄이 파일에 쓰이도록 기다리는 시간 */
+const QUIT_LOG_WAIT_MS = 300
+
 export function createUiSlice(set: SetState, get: GetState): UiState {
+  let quitting = false
   return {
     log: [],
     rxCount: 0,
@@ -29,6 +33,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
     setMacroPaneHeight: (h) => set({ macroPaneHeight: Math.round(Math.min(480, Math.max(34, h))) }),
     setLogEnabled: (logEnabled) => set({ logEnabled }),
     setLogRetention: (days) => set({ logRetentionDays: Math.max(0, Math.min(3650, Math.round(days) || 0)) }),
+    toggleBgThrottle: () => set((s) => ({ bgThrottle: !s.bgThrottle })),
     toggleMacros: () => set((s) => ({ macroCollapsed: !s.macroCollapsed })),
     toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
     setLanguage: (language) => {
@@ -50,7 +55,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
         lastDir: s.lastDir, macroFile: s.macroFile, rrFile: s.rrFile,
         charts: s.charts, activeChartId: s.activeChartId, chartCollecting: s.chartCollecting,
         chartOnTop: s.chartOnTop, chartWindow: s.chartWindow, chartsFile: s.chartsFile,
-        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays, fileSend: s.fileSend
+        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays, fileSend: s.fileSend, bgThrottle: s.bgThrottle
       }
     },
 
@@ -78,8 +83,16 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
     },
 
     quit: async () => {
+      if (quitting) return
+      quitting = true
+      // 보내는 중인 파일·주기 전송을 먼저 멈추고 연결을 닫는다 (포트를 연 채로 끝나면 win32 예외)
+      get().stopFileSend()
       get().stopAllMacros()
-      if (get().connected) await get().toggleConnect()
+      if (get().connected) {
+        await get().toggleConnect()
+        // "연결 해제" 줄이 화면·파일 로그에 반영될 때까지 잠깐 기다림 (로그 반영 50ms, 파일 로그 닫기 200ms)
+        await new Promise((r) => setTimeout(r, QUIT_LOG_WAIT_MS))
+      }
       await saveNow()
       window.api.quit()
     },

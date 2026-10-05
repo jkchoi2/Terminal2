@@ -34,19 +34,46 @@ function createWindow(): void {
     webPreferences: {
       preload: PRELOAD,
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      // 최소화해도 타이머(파일 전송 간격, 주기 매크로, 수신 반영)가 느려지지 않게. 상태바 버튼으로 바꿀 수 있음
+      backgroundThrottling: false
     }
+  })
+  // ✕ / Alt+F4: 바로 닫지 않고 renderer가 정리(전송 중지, 연결 닫기, 설정 저장)한 뒤 종료한다.
+  mainWindow.on('close', (e) => {
+    if (cleanedUp) return
+    e.preventDefault()
+    const wc = mainWindow?.webContents
+    if (wc && !wc.isDestroyed()) wc.send(IPC.requestQuit)
+    // renderer가 응답하지 않으면 main이 직접 정리하고 종료
+    setTimeout(() => void shutdown().then(() => app.quit()), QUIT_FALLBACK_MS)
   })
   mainWindow.on('closed', () => {
     mainWindow = undefined
-    void conn.close()
-    fileLog.stop()
     closeChart()
   })
   loadPage(mainWindow, 'index.html')
 }
 
 const PRELOAD = join(__dirname, '../preload/index.js')
+
+/** renderer가 종료 정리를 이 시간 안에 못 하면 main이 직접 정리 */
+const QUIT_FALLBACK_MS = 3000
+let cleanedUp = false
+let shuttingDown: Promise<void> | undefined
+
+/**
+ * 연결(포트·소켓)과 파일 로그를 닫는다. 포트를 연 채로 프로세스가 끝나면
+ * serialport 네이티브 모듈이 win32 예외로 죽으므로 종료 전에 반드시 거친다.
+ */
+function shutdown(): Promise<void> {
+  shuttingDown ??= (async () => {
+    await conn.close()
+    fileLog.stop()
+    cleanedUp = true
+  })()
+  return shuttingDown
+}
 
 /** Loads a renderer page from the dev server or the built files. */
 function loadPage(win: BrowserWindow, page: string): void {
@@ -119,7 +146,10 @@ function registerIpc(): void {
   ipcMain.handle(IPC.logCleanup, (_e, days: number) => fileLog.cleanup(days))
   ipcMain.handle(IPC.logOpenFolder, () => fileLog.openFolder())
 
-  ipcMain.on(IPC.quit, () => app.quit())
+  ipcMain.on(IPC.quit, () => void shutdown().then(() => app.quit()))
+  ipcMain.on(IPC.setThrottle, (_e, on: boolean) => {
+    for (const w of BrowserWindow.getAllWindows()) w.webContents.setBackgroundThrottling(on)
+  })
 
   registerChartIpc(() => mainWindow, loadPage, PRELOAD)
 }
@@ -135,6 +165,13 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+})
+
+// 어떤 경로로 끝나든(종료 버튼, 작업 표시줄 닫기 등) 연결을 닫은 뒤에 끝낸다.
+app.on('before-quit', (e) => {
+  if (cleanedUp) return
+  e.preventDefault()
+  void shutdown().then(() => app.quit())
 })
 
 app.on('window-all-closed', () => {

@@ -858,6 +858,17 @@ body.resizing {
 .theme-btn {
   font-size: 13px;
 }
+/* 최소화 시 속도 유지 버튼: 켜짐 = 노란 ⚡, 꺼짐(쓰로틀링) = 흐린 회색 */
+.bg-btn {
+  font-size: 12px;
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.bg-btn.on {
+  opacity: 1;
+  filter: none;
+  border-color: var(--warn);
+}
 
 /* ---------- modal ---------- */
 .modal-backdrop {

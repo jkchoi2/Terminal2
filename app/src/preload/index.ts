@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld('api', {
   loadConfig: () => ipcRenderer.invoke(IPC.configLoad),
   saveConfig: (content: string) => ipcRenderer.invoke(IPC.configSave, content),
   quit: () => ipcRenderer.send(IPC.quit),
+  onQuitRequest: (cb: () => void) => on(IPC.requestQuit, cb),
+  setThrottle: (on: boolean) => ipcRenderer.send(IPC.setThrottle, on),
   chart: {
     open: (bounds: unknown, onTop: boolean) => ipcRenderer.invoke(IPC.chartOpen, bounds, onTop),
     setOnTop: (on: boolean) => ipcRenderer.send(IPC.chartOnTop, on),

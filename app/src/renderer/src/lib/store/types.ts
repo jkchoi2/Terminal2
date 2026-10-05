@@ -71,6 +71,8 @@ export interface Snapshot {
   logRetentionDays: number
   /** 파일 전송 설정 */
   fileSend: FileSendSpec
+  /** 최소화했을 때 타이머를 늦출지 (false = 최소화해도 전송·수신 속도 유지) */
+  bgThrottle: boolean
 }
 
 /** 연결 (connSlice) */
@@ -137,6 +139,7 @@ export interface UiState {
   setModal: (m: ModalKind) => void
   setMacroPaneHeight: (h: number) => void
   toggleMacros: () => void
+  toggleBgThrottle: () => void
   setLogEnabled: (on: boolean) => void
   setLogRetention: (days: number) => void
   toggleTheme: () => void

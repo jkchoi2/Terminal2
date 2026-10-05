@@ -11,7 +11,7 @@ export function HelpEn(): JSX.Element {
             ['Receive', 'Traffic log: ASCII / HEX / HEX+ASCII, Time, Len, CR/LF, TX, packet framing, find, copy all, ● LOG (file log), R/R, chart'],
             ['Macros', 'Send stored messages with one click. ▾/▸ hides or shows the pane; drag the border above to resize'],
             ['Send', 'Type and send one line (ASCII/HEX, CR/LF appended when checked). ↑/↓ for history. ▾ next to Send = send a file'],
-            ['Status bar', 'Connection, summary, Rx/Tx counters with activity LEDs, config file path, encoding, language, theme']
+            ['Status bar', 'Connection, summary, Rx/Tx counters with activity LEDs, config file path, encoding, language, ⚡ keep speed when minimized, theme']
           ]}
         />
         <p>
@@ -111,6 +111,12 @@ export function HelpEn(): JSX.Element {
             <code>configTerminal-2.json</code> etc. (copied from the first window at first start). Numbers follow the launch order.
           </li>
         </ul>
+        <h4>Speed when minimized (⚡ in the status bar)</h4>
+        <p>
+          When a sending window is minimized, Chromium slows its timers to about once a second, so file send and periodic macros
+          slow down. With <b>⚡</b> (left of the theme button) on — yellow, the default — speed stays the same when minimized. Off
+          (grey) saves a little CPU but sending slows while minimized. The setting is saved.
+        </p>
         <h4>Profiles (always start with the same settings)</h4>
         <ol>
           <li>Set things up (connection type, address, macros …).</li>

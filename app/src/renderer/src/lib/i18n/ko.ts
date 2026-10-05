@@ -407,6 +407,8 @@ export const ko = {
   'shortcut.title': '바탕화면 바로가기 만들기',
 
   'status.activity': '{label} 활동 표시',
+  'status.bgFullTip': '최소화 속도 유지: 켜짐 — 창을 최소화하거나 가려도 파일 전송·주기 전송·수신 표시가 그대로 빠르게 동작합니다. 누르면 끔(최소화 시 CPU 절약, 대신 전송 간격이 약 1초로 느려짐)',
+  'status.bgThrottledTip': '최소화 속도 유지: 꺼짐 — 최소화하면 CPU를 아끼지만 파일 전송·주기 전송이 약 1초 간격으로 느려집니다. 누르면 켬',
   'status.connected': '연결됨',
   'status.disconnected': '연결 안 됨',
   'status.encodingTip': '한글 등 ASCII 모드 문자 인코딩',

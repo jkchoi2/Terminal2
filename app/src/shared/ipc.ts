@@ -16,6 +16,10 @@ export const IPC = {
   configLoad: 'config:load',
   configSave: 'config:save',
   quit: 'app:quit',
+  /** main → renderer: 창 닫기(✕) 요청 — renderer가 정리(전송 중지·연결 닫기·설정 저장) 후 quit */
+  requestQuit: 'app:request-quit',
+  /** 최소화 시 백그라운드 쓰로틀링 켜기/끄기 */
+  setThrottle: 'app:set-throttle',
 
   chartOpen: 'chart:open',
   chartOnTop: 'chart:onTop',
