@@ -24,7 +24,7 @@ export async function createProfileShortcut(name: string, configJson: string, ov
       target: process.execPath,
       args: `--profile=${profile}`,
       cwd: dirname(process.execPath),
-      description: `Terminal 2 [${profile}]`,
+      description: `Terminal2 [${profile}]`,
       icon: process.execPath,
       iconIndex: 0
     })

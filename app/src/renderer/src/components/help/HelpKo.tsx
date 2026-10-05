@@ -101,7 +101,7 @@ export function HelpKo(): JSX.Element {
         </p>
         <ul>
           <li>
-            <b>타이틀바</b>(작업 표시줄에도 표시): <code>Terminal 2 #2 — [TCP Client] → 127.0.0.1:9000 · 연결됨</code>처럼 방식, 주소,
+            <b>타이틀바</b>(작업 표시줄에도 표시): <code>Terminal2 #2 — [TCP Client] → 127.0.0.1:9000 · 연결됨</code>처럼 방식, 주소,
             상태가 표시됩니다. TCP Server는 접속한 클라이언트 수.
           </li>
           <li>

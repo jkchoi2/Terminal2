@@ -29,7 +29,7 @@ function useWindowTitle(): void {
       : s.connKind === 'tcp-server'
         ? t('conn.clients', { n: s.peers })
         : t('status.connected')
-    document.title = `Terminal 2${inst} — [${CONN_LABEL[s.connKind]}] ${describeConn(s.connKind, s.net, s.config)} · ${state}`
+    document.title = `Terminal2${inst} — [${CONN_LABEL[s.connKind]}] ${describeConn(s.connKind, s.net, s.config)} · ${state}`
   }, [s])
 }
 

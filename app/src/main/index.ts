@@ -27,7 +27,7 @@ function createWindow(): void {
     height: 860,
     minWidth: 900,
     minHeight: 600,
-    title: 'Terminal 2',
+    title: 'Terminal2',
     // Packaged builds use the icon embedded in the exe.
     icon: app.isPackaged ? undefined : join(app.getAppPath(), 'build/icon.png'),
     autoHideMenuBar: true,

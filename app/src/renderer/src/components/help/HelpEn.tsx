@@ -100,7 +100,7 @@ export function HelpEn(): JSX.Element {
         <ul>
           <li>
             The <b>title bar</b> (and taskbar) shows type, address and state, e.g.{' '}
-            <code>Terminal 2 #2 — [TCP Client] → 127.0.0.1:9000 · Connected</code>; a TCP Server shows its client count.
+            <code>Terminal2 #2 — [TCP Client] → 127.0.0.1:9000 · Connected</code>; a TCP Server shows its client count.
           </li>
           <li>
             The <b>Connect button color</b>: Serial blue, TCP Client teal, TCP Server orange, UDP purple. The type name in the status bar

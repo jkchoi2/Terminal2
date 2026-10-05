@@ -1,4 +1,4 @@
-# Terminal 2
+# Terminal2
 
 Windows용 시리얼 / TCP / UDP 터미널입니다. 예전 Win32 프로그램 "Terminal 1.9b"를 Electron + React로 다시 만들었고, 장비 통신 시험과 프로토콜 디버깅에 쓰는 기능(매크로, 자동 응답, 체크섬, 실시간 차트, 파일 로그)을 담았습니다.
 

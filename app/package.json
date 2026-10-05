@@ -30,5 +30,5 @@
     "vitest": "^5.0.3",
     "zustand": "^5.0.15"
   },
-  "description": "Terminal 2 serial terminal (Electron)"
+  "description": "Terminal2 serial terminal (Electron)"
 }

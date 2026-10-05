@@ -35,7 +35,7 @@ export function registerChartIpc(
       y: bounds?.y,
       minWidth: 640,
       minHeight: 400,
-      title: 'Terminal 2 - Chart',
+      title: 'Terminal2 - Chart',
       autoHideMenuBar: true,
       alwaysOnTop: onTop,
       webPreferences: { preload, contextIsolation: true, sandbox: false, backgroundThrottling: !!mainWindow()?.webContents.getBackgroundThrottling() }
