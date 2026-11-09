@@ -19,8 +19,12 @@ config*.json
 기능수정사항*.txt
 기능추가요청*.txt
 화면기능 검토 의견*.txt
-Screenshot/*.txt
+/Screenshot/
 CLAUDE-*.md
+adc-realtime chart.png
+Fan-Control-protocol.png
+Terminal-stitch2.png
+Terminal-Edit.exe
 
 # 홍보 영상 작업 파일
 promo/_work/
