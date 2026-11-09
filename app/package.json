@@ -30,5 +30,10 @@
     "vitest": "^5.0.3",
     "zustand": "^5.0.15"
   },
-  "description": "Terminal2 serial terminal (Electron)"
+  "description": "Terminal2 serial terminal (Electron)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jkchoi2/Terminal2.git"
+  }
 }

@@ -12,11 +12,13 @@ Windows용 시리얼 / TCP / UDP 터미널입니다. 예전 Win32 프로그램 "
 - TCP Server: 여러 클라이언트를 받고, 전체 또는 특정 클라이언트에게 보냅니다. 수신 줄 앞에 `[IP:port]`가 붙습니다.
 - UDP: 로컬/원격 주소와 포트, Broadcast.
 - 최근 연결한 주소를 방식별로 20개까지 기억합니다.
+- 연결 중에도 포트, 속도, 데이터 비트, 패리티 같은 시리얼 설정을 바꿀 수 있습니다. 바꾸면 끊지 않고 새 설정으로 다시 엽니다.
 
 **수신과 송신**
 - 표시 방식: ASCII / HEX / HEX+ASCII. 시간과 길이 표시, 찾기, 복사.
 - 패킷 구분: 시간 간격 / 끝 문자(LF·CR·ETX) / 길이 바이트.
-- 매크로: 단축키, 주기 전송, 체크섬(SUM8, XOR8, LRC8, CRC16 Modbus/CCITT/XMODEM, CRC32).
+- 매크로: 단축키, 주기 전송, 체크섬(SUM8, XOR8, LRC8, CRC16 Modbus/CCITT/XMODEM, CRC32). 버튼을 누르면 한 번 보내고, 버튼 오른쪽 ⟳을 누르면 주기 전송을 시작하거나 멈춥니다.
+- 매크로 편집 창: ▶ 버튼이나 Ctrl+Enter로 고친 내용을 저장하기 전에 바로 보내 볼 수 있습니다. 창을 열어 둔 채 메인 화면도 쓸 수 있습니다.
 - R/R(Request/Response) 자동 응답: 와일드카드, 정규식, 체크섬 검증. 응답에 요청 바이트를 `R[n]`으로 넣을 수 있습니다.
 - 파일 전송(보내기 ▾): 줄 단위 / 파일 전체 / N바이트씩, 간격(ms), 반복 횟수. 줄 단위에서는 `<CR>` 같은 표기를 바이트로 바꾸고, 특정 문자열로 시작하는 줄(예: 로그의 응답 줄)을 뺄 수 있습니다.
 - 한글 인코딩: EUC-KR / UTF-8.
@@ -80,3 +82,7 @@ app/src/
 ## 기술 스택
 
 Electron 44, React 19, TypeScript 7, Vite 7 (electron-vite), Zustand 5, serialport 13, ECharts 6, electron-builder, vitest
+
+## 라이선스
+
+[MIT](LICENSE)
