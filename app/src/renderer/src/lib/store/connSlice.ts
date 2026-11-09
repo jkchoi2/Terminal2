@@ -8,6 +8,7 @@ import { chartPacket } from './chart'
 import { BAUD_PRESETS, errMsg } from './defaults'
 import { entry, pending, pushSys, queueLog } from './logQueue'
 import { matchRR } from './rr'
+import type { SerialConfig } from '../types'
 import type { ConnState, GetState, SetState } from './types'
 
 export function createConnSlice(set: SetState, get: GetState): ConnState {
@@ -116,6 +117,33 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
     }
   }
 
+  /**
+   * 연결 중 시리얼 설정(포트·속도·형식)을 바꾸면 끊지 않고 새 설정으로 다시 연다.
+   * markClosed를 거치지 않으므로 주기 매크로와 파일 로그는 그대로 이어진다.
+   */
+  const reopenSerial = async (prev: SerialConfig): Promise<void> => {
+    const { config, net, frame } = get()
+    const lines = { dtr: get().dtr, rts: get().rts }
+    set({ busy: true })
+    try {
+      if (config.port === LOOPBACK_PORT) {
+        if (prev.port !== LOOPBACK_PORT) await window.api.conn.close().catch(() => undefined)
+        set((s) => ({ lines: { ...s.lines, ...lines, cts: true, dsr: true } }))
+        pushSys(t('log.openedLoopback'))
+      } else {
+        // ConnectionManager.open이 이전 포트를 먼저 닫는다.
+        await window.api.conn.open(openRequest('serial', net, config, lines), frame)
+        set((s) => ({ lines: { ...s.lines, ...lines } }))
+        const format = `${config.dataBits}${config.parity[0].toUpperCase()}${config.stopBits}`
+        pushSys(t('log.reconfigured', { port: config.port, baud: config.baudRate, format }))
+      }
+    } catch (e) {
+      markClosed(t('log.openError', { port: config.port, msg: errMsg(e) }))
+    } finally {
+      set({ busy: false })
+    }
+  }
+
   return {
     ports: [],
     peers: [],
@@ -128,7 +156,13 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
     // Off by default like the original Terminal (RTS can switch RS-485 adapters to transmit-only).
     lines: { cts: false, dsr: false, cd: false, dtr: false, rts: false },
 
-    setConfig: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
+    setConfig: (patch) => {
+      const prev = get().config
+      const next = { ...prev, ...patch }
+      set({ config: next })
+      const changed = (Object.keys(patch) as (keyof SerialConfig)[]).some((k) => prev[k] !== next[k])
+      if (changed && isSerial() && get().connected && !get().busy) void reopenSerial(prev)
+    },
     setConnKind: (connKind) => {
       if (get().connected || get().busy) return
       set({ connKind })

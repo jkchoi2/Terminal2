@@ -16,7 +16,8 @@ export function ConnectionBar(): JSX.Element {
     <section className="panel conn-bar">
       <ConnectSplitButton />
 
-      {connKind === 'serial' && <SerialFields locked={locked} />}
+      {/* 시리얼은 연결 중에도 설정을 바꿀 수 있다 (바꾸면 다시 연다). */}
+      {connKind === 'serial' && <SerialFields locked={busy} />}
       {connKind === 'tcp-client' && <TcpClientFields locked={locked} />}
       {connKind === 'tcp-server' && <TcpServerFields locked={locked} />}
       {connKind === 'udp' && <UdpFields locked={locked} />}

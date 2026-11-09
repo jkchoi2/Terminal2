@@ -20,7 +20,15 @@ function tooltip(m: Macro): string {
 
 export function MacroBar(): JSX.Element {
   const { macros, running, connected, macroPaneHeight, collapsed } = useStore(useShallow((s) => ({ macros: s.macros, running: s.running, connected: s.connected, macroPaneHeight: s.macroPaneHeight, collapsed: s.macroCollapsed })))
-  const { triggerMacro, stopAllMacros, setModal, toggleMacros } = useStore(useShallow((s) => ({ triggerMacro: s.triggerMacro, stopAllMacros: s.stopAllMacros, setModal: s.setModal, toggleMacros: s.toggleMacros })))
+  const { triggerMacro, toggleMacroLoop, stopAllMacros, setModal, toggleMacros } = useStore(
+    useShallow((s) => ({
+      triggerMacro: s.triggerMacro,
+      toggleMacroLoop: s.toggleMacroLoop,
+      stopAllMacros: s.stopAllMacros,
+      setModal: s.setModal,
+      toggleMacros: s.toggleMacros
+    }))
+  )
   const anyRunning = Object.values(running).some(Boolean)
   const visible = macros.filter((m) => m.enabled && m.data)
 
@@ -46,14 +54,26 @@ export function MacroBar(): JSX.Element {
             {visible.map((m) => (
               <button
                 key={m.id}
-                className={`macro-btn${running[m.id] ? ' running' : ''}${m.name.trim() ? '' : ' auto-name'}`}
+                className={`macro-btn${running[m.id] ? ' running' : ''}${m.name.trim() ? '' : ' auto-name'}${m.intervalMs > 0 ? ' has-loop' : ''}`}
                 title={tooltip(m)}
                 onClick={() => triggerMacro(m.id)}
                 data-offline={!connected || undefined}
               >
                 {m.hotkey && <span className="key">{m.hotkey}</span>}
                 <span className="name">{macroLabel(m)}</span>
-                {m.intervalMs > 0 && <span className="cyc">⟳</span>}
+                {m.intervalMs > 0 && (
+                  <span
+                    className="cyc"
+                    role="button"
+                    title={t(running[m.id] ? 'macro.loopStop' : 'macro.loopStart', { ms: m.intervalMs })}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleMacroLoop(m.id)
+                    }}
+                  >
+                    {running[m.id] ? '■' : '⟳'}
+                  </span>
+                )}
               </button>
             ))}
           </div>

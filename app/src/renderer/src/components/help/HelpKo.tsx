@@ -26,6 +26,10 @@ export function HelpKo(): JSX.Element {
           <li>Connect 버튼 오른쪽 <b>▾</b>에서 <b>Serial</b>을 고릅니다(버튼 아래 작은 글씨로 현재 방식 표시).</li>
           <li>Port에서 COM 포트를 고릅니다. 장치 이름이 함께 표시됩니다(예: COM8 — Silicon Labs CP210x). 목록에 없으면 ⟳.</li>
           <li>Baud rate는 목록에서 고르거나 숫자를 직접 입력(Custom). 표준이 아닌 값은 주황 테두리로 표시됩니다.</li>
+          <li>
+            연결 중에도 Port·Baud rate·Data bits·Parity·Stop bits·Handshaking을 바꿀 수 있습니다. 바꾸면 포트를 새 설정으로 바로
+            다시 열고(주기 매크로·파일 로그는 계속), 열기에 실패하면 연결이 끊깁니다.
+          </li>
           <li>Data bits / Parity / Stop bits / Handshaking 설정 후 <b>Connect</b>. 연결되면 버튼이 초록색 <b>Disconnect</b>로 바뀝니다.</li>
         </ol>
         <Table
@@ -205,7 +209,14 @@ export function HelpKo(): JSX.Element {
           </li>
           <li>Hex 체크 = HEX 메시지, 해제 = ASCII. 버튼 이름을 비우면 메시지 앞부분이 이름으로 쓰입니다.</li>
           <li>단축키 칸을 클릭하고 키를 누르면 등록(F1~F12 단독, 그 외는 Ctrl/Alt 조합). Backspace = 해제. 중복은 빨간색.</li>
-          <li>주기(ms) &gt; 0 이면 버튼을 누를 때마다 주기 전송 시작/정지(⟳ 표시).</li>
+          <li>
+            메인 화면의 매크로 버튼(과 단축키)은 항상 <b>1회 전송</b>입니다. 주기(ms) &gt; 0 이면 버튼 오른쪽에 <b>⟳</b> 칸이 생기고,
+            ⟳를 누르면 그 주기로 반복 전송 시작, 반복 중에는 <b>■</b>로 바뀌어 누르면 정지합니다.
+          </li>
+          <li>
+            편집 창 아래 미리보기 줄의 <b>▶ 전송</b>(또는 Ctrl+Enter)은 선택한 행을 편집 중인 내용 그대로 보냅니다. 저장(확인)
+            전에 바로 시험해 볼 수 있습니다. 연결되어 있어야 합니다.
+          </li>
           <li>
             <b>CS</b> 버튼: 체크섬과 Trailer(체크섬 뒤에 붙는 바이트, 예: ETX) 설정. 설정되면 메시지 오른쪽에 실제로 붙는 값이{' '}
             <span className="cs-chip">+DD 03</span> 처럼 표시됩니다.

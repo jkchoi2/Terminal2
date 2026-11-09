@@ -673,12 +673,27 @@ input.warn {
   font-style: italic;
   opacity: 0.8;
 }
+/* 주기 매크로: 오른쪽 ⟳ 구획 = 반복 시작/정지 (본체 클릭은 1회 전송) */
+.macro-btn.has-loop {
+  padding-right: 26px;
+}
 .macro-btn .cyc {
   position: absolute;
-  top: 1px;
-  right: 3px;
-  font-size: 9px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   color: var(--muted);
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+}
+.macro-btn .cyc:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 /* 매크로 영역 접기/펴기 */
 .fold-btn {
@@ -706,15 +721,13 @@ body.resizing {
 }
 .macro-btn.running .cyc {
   color: var(--ok);
-  animation: spin 1.2s linear infinite;
+  border-left-color: var(--ok);
+}
+.macro-btn.running .cyc:hover {
+  color: var(--err);
 }
 .macro-btn[data-offline] .name {
   opacity: 0.7;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ---------- send ---------- */

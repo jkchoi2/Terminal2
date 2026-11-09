@@ -113,7 +113,10 @@ export interface ConnState {
 export interface MacroState {
   running: Record<number, boolean>
   hits: Record<number, number>
+  /** 한 번 전송 */
   triggerMacro: (id: number) => void
+  /** 주기 전송 시작/정지 (intervalMs > 0 인 매크로만) */
+  toggleMacroLoop: (id: number) => void
   stopAllMacros: () => void
   setMacros: (m: Macro[], file?: FileLink | null) => void
   setRR: (enabled: boolean, rules: RRRule[], file?: FileLink | null) => void

@@ -125,6 +125,8 @@ export function MacroEditor(): JSX.Element {
   const setMacros = useStore((s) => s.setMacros)
   const setModal = useStore((s) => s.setModal)
   const encoding = useStore((s) => s.encoding)
+  const connected = useStore((s) => s.connected)
+  const [testResult, setTestResult] = useState<{ ok: boolean; text: string }>()
   const [draft, setDraft] = useState<Macro[]>(() => macros.map((m) => ({ ...m })))
   const [fileLink, setFileLink] = useState<FileLink | null>(useStore.getState().macroFile)
   const [selId, setSelId] = useState<number | undefined>(macros[0]?.id)
@@ -169,6 +171,14 @@ export function MacroEditor(): JSX.Element {
   const sel = draft[selIndex]
   const selPkt = sel ? packets.get(sel.id) : undefined
   const csMacro = draft.find((m) => m.id === csId)
+  const canTest = connected && !!sel && !!selPkt && !selPkt.error && selPkt.bytes.length > 0
+
+  /** 선택한 행을 편집 중인 내용 그대로 보낸다 (저장 전 시험용). */
+  const testSend = async (): Promise<void> => {
+    if (!canTest) return
+    const ok = await useStore.getState().send(selPkt.bytes, `TEST ${macroLabel(sel)}`)
+    setTestResult({ ok, text: ok ? t('macro.testSent', { time: new Date().toTimeString().slice(0, 8) }) : t('macro.testFailed') })
+  }
 
   // File content = the macro list without runtime ids.
   const fileData = useMemo(() => draft.map(stripId), [draft])
@@ -182,7 +192,10 @@ export function MacroEditor(): JSX.Element {
   // Alt+↑/↓ moves the selected row, Delete removes it (when not typing in a field).
   const onTableKey = (e: React.KeyboardEvent): void => {
     const typing = (e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type !== 'checkbox'
-    if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault()
+      void testSend()
+    } else if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
       e.preventDefault()
       move(e.key === 'ArrowUp' ? -1 : 1)
     } else if (e.key === 'Delete' && !typing) {
@@ -356,6 +369,16 @@ export function MacroEditor(): JSX.Element {
             <span className="muted">({selPkt.bytes.length} bytes)</span>
           </>
         )}
+        <div className="spacer" />
+        {testResult && <span className={`small ${testResult.ok ? 'ok' : 'err'}`}>{testResult.text}</span>}
+        <button
+          className="primary"
+          disabled={!canTest}
+          title={connected ? t('macro.testSendTip') : t('macro.testNotConnected')}
+          onClick={() => void testSend()}
+        >
+          {t('macro.testSend')}
+        </button>
       </div>
 
       {csMacro && <ChecksumDialog macro={csMacro} onApply={(p) => patch(csMacro.id, p)} onClose={() => setCsId(undefined)} />}

@@ -25,14 +25,18 @@ export function createMacroSlice(set: SetState, get: GetState): MacroState {
     running: {},
     hits: {},
 
+    /** 주기와 관계없이 한 번 보낸다 (버튼 클릭, 단축키). */
     triggerMacro: (id) => {
       const m = get().macros.find((x) => x.id === id)
       if (!m || !m.enabled) return
-      if (m.intervalMs <= 0) {
-        const err = sendMacro(m)
-        if (err) pushSys(t('log.macroError', { name: macroLabel(m), msg: err }))
-        return
-      }
+      const err = sendMacro(m)
+      if (err) pushSys(t('log.macroError', { name: macroLabel(m), msg: err }))
+    },
+
+    /** 주기 전송 시작/정지 (버튼의 ⟳ 영역). */
+    toggleMacroLoop: (id) => {
+      const m = get().macros.find((x) => x.id === id)
+      if (!m || !m.enabled || m.intervalMs <= 0) return
       if (timers.has(id)) {
         stopMacro(id)
         set((s) => ({ running: { ...s.running, [id]: false } }))

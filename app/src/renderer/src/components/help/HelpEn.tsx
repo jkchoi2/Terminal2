@@ -26,6 +26,10 @@ export function HelpEn(): JSX.Element {
           <li>Choose <b>Serial</b> with the <b>▾</b> on the right of the Connect button (the current type is shown under the button).</li>
           <li>Pick a COM port (device name shown, e.g. COM8 — Silicon Labs CP210x). ⟳ rescans.</li>
           <li>Pick a baud rate or type any value (custom). Non-standard values get an orange border.</li>
+          <li>
+            Port, baud rate, data bits, parity, stop bits and handshaking can be changed while connected: the port is reopened with
+            the new settings (periodic macros and the file log keep going). If it cannot be reopened, the connection is closed.
+          </li>
           <li>Set data bits / parity / stop bits / handshaking, then <b>Connect</b>. The button turns into a green <b>Disconnect</b>.</li>
         </ol>
         <Table
@@ -177,7 +181,9 @@ export function HelpEn(): JSX.Element {
         <p>
           In the macro editor select a row, then use Add / Duplicate / Up / Down / Delete (Alt+↑/↓, Delete). Hex checkbox switches
           the message to HEX. Empty name = start of the message. Click the hotkey cell and press a key (F1–F12 alone, otherwise
-          Ctrl/Alt combos). Interval &gt; 0 toggles periodic sending. <b>CS</b> sets checksum and trailer; the appended bytes are
+          Ctrl/Alt combos). On the main screen a macro button (and its hotkey) always <b>sends once</b>; with interval &gt; 0 the
+          button gets a <b>⟳</b> area on its right that starts repeating, and shows <b>■</b> to stop. <b>▶ Send</b> under the editor
+          table (or Ctrl+Enter) sends the selected row as currently edited, before you save. <b>CS</b> sets checksum and trailer; the appended bytes are
           shown next to the message. Byte order: <code>message | checksum | trailer | CR | LF</code>.
         </p>
       </Section>
