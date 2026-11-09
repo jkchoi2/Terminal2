@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Modal } from './Modal'
 import { useStore } from '@/lib/store'
+import { useDialogSize } from './useDialogSize'
 import { getLang, t } from '@/lib/i18n'
 import { HelpKo } from './help/HelpKo'
 import { HelpEn } from './help/HelpEn'
@@ -12,11 +13,12 @@ const TOC = [
 
 export function QuickHelp(): JSX.Element {
   const setModal = useStore((s) => s.setModal)
+  const dialogSize = useDialogSize('help')
   const bodyRef = useRef<HTMLDivElement>(null)
   const go = (id: string): void => bodyRef.current?.querySelector(`#help-${id}`)?.scrollIntoView({ behavior: 'smooth' })
 
   return (
-    <Modal title={`${t('help.title')} — Terminal2 v${__APP_VERSION__}`} onClose={() => setModal(null)} size="large">
+    <Modal title={`${t('help.title')} — Terminal2 v${__APP_VERSION__}`} onClose={() => setModal(null)} size="large" {...dialogSize}>
       <div className="help-layout">
         <nav className="help-toc">
           {TOC.map((id) => (

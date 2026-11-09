@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Modal } from './Modal'
 import { BytePreview, ChecksumFields } from './PacketChecksumEditor'
 import { blankPacket, uid, useStore } from '@/lib/store'
+import { useDialogSize } from './useDialogSize'
 import { buildPayload, toHex } from '@/lib/hex'
 import { buildPacket } from '@/lib/packet'
 import { compileRequest } from '@/lib/pattern'
@@ -47,6 +48,7 @@ function patternHint(req: RequestSpec): string {
 
 export function RequestResponseEditor(): JSX.Element {
   const store = useStore()
+  const dialogSize = useDialogSize('rr')
   const [enabled, setEnabled] = useState(store.rrEnabled)
   const [rules, setRules] = useState<RRRule[]>(() => structuredClone(store.rules))
   const [selId, setSelId] = useState<number | undefined>(rules[0]?.id)
@@ -142,7 +144,7 @@ export function RequestResponseEditor(): JSX.Element {
   )
 
   return (
-    <Modal title={t('rr.title')} onClose={close} footer={footer} size="large">
+    <Modal title={t('rr.title')} onClose={close} footer={footer} size="large" {...dialogSize}>
       <div className="rr-head">
         <label className="switch">
           <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />

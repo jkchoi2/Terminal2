@@ -73,6 +73,8 @@ export interface Snapshot {
   fileSend: FileSendSpec
   /** 최소화했을 때 타이머를 늦출지 (false = 최소화해도 전송·수신 속도 유지) */
   bgThrottle: boolean
+  /** 큰 대화 상자의 마지막 크기 (Modal sizeKey별, px) */
+  dialogSizes: Record<string, { w: number; h: number }>
 }
 
 /** 연결 (connSlice) */
@@ -141,6 +143,7 @@ export interface UiState {
   resetCounters: () => void
   setModal: (m: ModalKind) => void
   setMacroPaneHeight: (h: number) => void
+  setDialogSize: (key: string, size: { w: number; h: number }) => void
   toggleMacros: () => void
   toggleBgThrottle: () => void
   setLogEnabled: (on: boolean) => void

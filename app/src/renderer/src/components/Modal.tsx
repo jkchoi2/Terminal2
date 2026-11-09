@@ -14,6 +14,10 @@ interface Props {
   closeOnEsc?: boolean
   /** .modal에 덧붙일 클래스 (예: 'compact' = 촘촘한 글꼴·간격) */
   className?: string
+  /** size='large'일 때 시작 크기(px). 없으면 창의 94% × 92% */
+  initialSize?: { w: number; h: number }
+  /** size='large' 창을 모서리로 끌어 크기를 바꾼 뒤 호출 (저장용) */
+  onResized?: (size: { w: number; h: number }) => void
 }
 
 // Open modals, innermost last; Esc closes only the top one.
@@ -21,7 +25,7 @@ const stack: symbol[] = []
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v))
 
-export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true, className }: Props): JSX.Element {
+export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true, className, initialSize, onResized }: Props): JSX.Element {
   const closeRef = useRef(onClose)
   closeRef.current = onClose
   const escRef = useRef(closeOnEsc)
@@ -29,6 +33,30 @@ export function Modal({ title, onClose, children, footer, size = 760, closeOnBac
   const boxRef = useRef<HTMLDivElement>(null)
   /** 제목줄을 끌어 옮긴 거리 (창 밖으로는 못 나감). 다시 열면 가운데에서 시작 */
   const [pos, setPos] = useState({ x: 0, y: 0 })
+  const resizedRef = useRef(onResized)
+  resizedRef.current = onResized
+
+  // 모서리로 크기를 바꾸면 잠시 뒤 알린다 (처음 열릴 때의 측정은 무시).
+  useEffect(() => {
+    const box = boxRef.current
+    if (size !== 'large' || !box) return
+    let first = true
+    let win = `${window.innerWidth}x${window.innerHeight}`
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const ro = new ResizeObserver(() => {
+      if (first) return void (first = false)
+      // 프로그램 창이 작아져서 함께 줄어든 경우는 저장하지 않는다.
+      const now = `${window.innerWidth}x${window.innerHeight}`
+      if (now !== win) return void (win = now)
+      clearTimeout(timer)
+      timer = setTimeout(() => resizedRef.current?.({ w: Math.round(box.offsetWidth), h: Math.round(box.offsetHeight) }), 300)
+    })
+    ro.observe(box)
+    return () => {
+      ro.disconnect()
+      clearTimeout(timer)
+    }
+  }, [size])
 
   const startDrag = (e: React.MouseEvent): void => {
     const box = boxRef.current
@@ -67,7 +95,7 @@ export function Modal({ title, onClose, children, footer, size = 760, closeOnBac
   }, [title])
 
   const style = {
-    ...(size === 'large' ? { width: '94vw', height: '92vh' } : { width: size }),
+    ...(size !== 'large' ? { width: size } : initialSize ? { width: initialSize.w, height: initialSize.h } : { width: '94vw', height: '92vh' }),
     transform: `translate(${pos.x}px, ${pos.y}px)`
   }
 

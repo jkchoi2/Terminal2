@@ -30,6 +30,7 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
     },
     resetCounters: () => set({ rxCount: 0, txCount: 0 }),
     setModal: (modal) => set({ modal }),
+    setDialogSize: (key, size) => set((s) => ({ dialogSizes: { ...s.dialogSizes, [key]: size } })),
     setMacroPaneHeight: (h) => set({ macroPaneHeight: Math.round(Math.min(480, Math.max(34, h))) }),
     setLogEnabled: (logEnabled) => set({ logEnabled }),
     setLogRetention: (days) => set({ logRetentionDays: Math.max(0, Math.min(3650, Math.round(days) || 0)) }),
@@ -55,7 +56,8 @@ export function createUiSlice(set: SetState, get: GetState): UiState {
         lastDir: s.lastDir, macroFile: s.macroFile, rrFile: s.rrFile,
         charts: s.charts, activeChartId: s.activeChartId, chartCollecting: s.chartCollecting,
         chartOnTop: s.chartOnTop, chartWindow: s.chartWindow, chartsFile: s.chartsFile,
-        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays, fileSend: s.fileSend, bgThrottle: s.bgThrottle
+        logEnabled: s.logEnabled, logRetentionDays: s.logRetentionDays, fileSend: s.fileSend, bgThrottle: s.bgThrottle,
+        dialogSizes: s.dialogSizes
       }
     },
 

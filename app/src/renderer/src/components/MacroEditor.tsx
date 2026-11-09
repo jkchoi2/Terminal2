@@ -8,6 +8,7 @@ import { CHECKSUM_SHORT } from '@/lib/checksum'
 import { hotkeyError, hotkeyFromEvent } from '@/lib/hotkey'
 import type { FileLink } from '@/lib/files'
 import { FileBar } from './FileBar'
+import { useDialogSize } from './useDialogSize'
 import { t } from '@/lib/i18n'
 import type { ChecksumSpec, Macro } from '@/lib/types'
 
@@ -118,6 +119,9 @@ function ChecksumDialog({
   )
 }
 
+/** 매크로 편집 창 기본 크기 (20행 + 전송 줄·툴바가 스크롤 없이 들어감) */
+const MACRO_DIALOG_SIZE = { w: 920, h: 700 }
+
 const stripId = ({ id: _id, ...m }: Macro): Omit<Macro, 'id'> => m
 
 export function MacroEditor(): JSX.Element {
@@ -126,6 +130,7 @@ export function MacroEditor(): JSX.Element {
   const setModal = useStore((s) => s.setModal)
   const encoding = useStore((s) => s.encoding)
   const connected = useStore((s) => s.connected)
+  const dialogSize = useDialogSize('macros', MACRO_DIALOG_SIZE)
   const [testResult, setTestResult] = useState<{ ok: boolean; text: string }>()
   const [draft, setDraft] = useState<Macro[]>(() => macros.map((m) => ({ ...m })))
   const [fileLink, setFileLink] = useState<FileLink | null>(useStore.getState().macroFile)
@@ -224,25 +229,47 @@ export function MacroEditor(): JSX.Element {
   )
 
   return (
-    <Modal title={t('macro.editorTitle', { n: draft.length })} onClose={close} footer={footer} size="large" className="compact">
-      <div className="list-toolbar">
-        <button onClick={() => insert(blankMacro())}>{t('list.add')}</button>
-        <button disabled={!sel} onClick={() => sel && insert({ ...sel, id: uid(), hotkey: '' })}>
-          {t('list.duplicate')}
-        </button>
-        <span className="sep" />
-        <button disabled={selIndex <= 0} onClick={() => move(-1)} title="Alt+↑">
-          ▲ {t('list.up')}
-        </button>
-        <button disabled={selIndex < 0 || selIndex >= draft.length - 1} onClick={() => move(1)} title="Alt+↓">
-          ▼ {t('list.down')}
-        </button>
-        <span className="sep" />
-        <button className="danger" disabled={!sel} onClick={remove} title="Delete">
-          ✕ {t('list.delete')}
-        </button>
+    <Modal
+      title={t('macro.editorTitle', { n: draft.length })}
+      onClose={close}
+      footer={footer}
+      size="large"
+      className="compact"
+      {...dialogSize}
+    >
+      <div className="preview-bar">
+        {!sel || !selPkt ? (
+          <span className="muted">{t('macro.previewEmpty')}</span>
+        ) : selPkt.error ? (
+          <span className="err">
+            {macroLabel(sel)}: {selPkt.error}
+          </span>
+        ) : (
+          <>
+            <span className="muted">{macroLabel(sel)} →</span>
+            <span className="mono">
+              {Array.from(selPkt.bytes).map((b, i) => {
+                const isCs = selPkt.csPos && i >= selPkt.csPos[0] && i < selPkt.csPos[1]
+                return (
+                  <span key={i} className={isCs ? 'cs-text' : ''}>
+                    {hex2(b)}{' '}
+                  </span>
+                )
+              })}
+            </span>
+            <span className="muted">({selPkt.bytes.length} bytes)</span>
+          </>
+        )}
         <div className="spacer" />
-        <span className="hint">{t('macro.listHint')}</span>
+        {testResult && <span className={`small ${testResult.ok ? 'ok' : 'err'}`}>{testResult.text}</span>}
+        <button
+          className="primary"
+          disabled={!canTest}
+          title={connected ? t('macro.testSendTip') : t('macro.testNotConnected')}
+          onClick={() => void testSend()}
+        >
+          {t('macro.testSend')}
+        </button>
       </div>
 
       <div className="table-scroll" onKeyDown={onTableKey}>
@@ -250,15 +277,15 @@ export function MacroEditor(): JSX.Element {
           <thead>
             <tr>
               <th className="c-key">{t('macro.colHotkey')}</th>
-              <th>On</th>
+              <th className="c-chk">{t('macro.colUse')}</th>
               <th className="c-name">{t('macro.colName')}</th>
-              <th title={t('macro.hexTip')}>Hex</th>
+              <th className="c-chk" title={t('macro.hexTip')}>Hex</th>
               <th>{t('macro.colMessage')}</th>
               <th className="c-bytes" title={t('macro.bytesTip')}>Bytes</th>
               <th className="c-int" title={t('macro.intervalTip')}>{t('macro.colInterval')}</th>
-              <th>CR</th>
-              <th>LF</th>
-              <th>CheckSum</th>
+              <th className="c-chk">CR</th>
+              <th className="c-chk">LF</th>
+              <th className="c-cs" title={t('macro.csTip')}>CS</th>
             </tr>
           </thead>
           <tbody>
@@ -346,39 +373,24 @@ export function MacroEditor(): JSX.Element {
         </table>
       </div>
 
-      <div className="preview-bar">
-        {!sel || !selPkt ? (
-          <span className="muted">{t('macro.previewEmpty')}</span>
-        ) : selPkt.error ? (
-          <span className="err">
-            {macroLabel(sel)}: {selPkt.error}
-          </span>
-        ) : (
-          <>
-            <span className="muted">{macroLabel(sel)} →</span>
-            <span className="mono">
-              {Array.from(selPkt.bytes).map((b, i) => {
-                const isCs = selPkt.csPos && i >= selPkt.csPos[0] && i < selPkt.csPos[1]
-                return (
-                  <span key={i} className={isCs ? 'cs-text' : ''}>
-                    {hex2(b)}{' '}
-                  </span>
-                )
-              })}
-            </span>
-            <span className="muted">({selPkt.bytes.length} bytes)</span>
-          </>
-        )}
-        <div className="spacer" />
-        {testResult && <span className={`small ${testResult.ok ? 'ok' : 'err'}`}>{testResult.text}</span>}
-        <button
-          className="primary"
-          disabled={!canTest}
-          title={connected ? t('macro.testSendTip') : t('macro.testNotConnected')}
-          onClick={() => void testSend()}
-        >
-          {t('macro.testSend')}
+      <div className="list-toolbar">
+        <button onClick={() => insert(blankMacro())}>{t('list.add')}</button>
+        <button disabled={!sel} onClick={() => sel && insert({ ...sel, id: uid(), hotkey: '' })}>
+          {t('list.duplicate')}
         </button>
+        <span className="sep" />
+        <button disabled={selIndex <= 0} onClick={() => move(-1)} title="Alt+↑">
+          ▲ {t('list.up')}
+        </button>
+        <button disabled={selIndex < 0 || selIndex >= draft.length - 1} onClick={() => move(1)} title="Alt+↓">
+          ▼ {t('list.down')}
+        </button>
+        <span className="sep" />
+        <button className="danger" disabled={!sel} onClick={remove} title="Delete">
+          ✕ {t('list.delete')}
+        </button>
+        <div className="spacer" />
+        <span className="hint">{t('macro.listHint')}</span>
       </div>
 
       {csMacro && <ChecksumDialog macro={csMacro} onApply={(p) => patch(csMacro.id, p)} onClose={() => setCsId(undefined)} />}

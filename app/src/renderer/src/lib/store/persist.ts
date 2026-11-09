@@ -48,7 +48,8 @@ export function initialSnapshot(): Snapshot {
     logEnabled: false,
     logRetentionDays: 30,
     fileSend: DEFAULT_FILE_SEND,
-    bgThrottle: false
+    bgThrottle: false,
+    dialogSizes: {}
   }
 }
 

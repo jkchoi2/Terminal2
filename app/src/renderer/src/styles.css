@@ -1683,7 +1683,18 @@ body.resizing-x {
   padding: 2px 8px;
 }
 .modal.compact > .modal-body > .list-toolbar {
-  padding-bottom: 4px;
+  padding: 6px 0 0;
+}
+/* 체크박스 열(사용·Hex·CR·LF)과 CS 열은 좁게: 남는 폭은 모두 메시지 열로 */
+.modal.compact .macro-table .c-chk {
+  width: 30px;
+  text-align: center;
+}
+.modal.compact .macro-table td:has(> input[type='checkbox']) {
+  text-align: center;
+}
+.modal.compact .macro-table .c-cs {
+  width: 44px;
 }
 .modal.compact .macro-table th {
   padding: 3px 4px;
@@ -1719,7 +1730,10 @@ body.resizing-x {
   font-size: 10px;
   padding: 0 5px;
 }
+/* 전송 줄은 목록 위 (본문 위 가장자리에 붙음) */
 .modal.compact > .modal-body > .preview-bar {
-  margin: 6px -10px -8px;
+  margin: -8px -10px 6px;
   padding: 4px 10px;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
 }
