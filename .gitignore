@@ -14,3 +14,15 @@ config*.json
 
 # 로컬 도구 설정
 .claude/
+
+# 개발 중 요청·검토 메모 (GitHub에 올리지 않음)
+기능수정사항*.txt
+기능추가요청*.txt
+화면기능 검토 의견*.txt
+Screenshot/*.txt
+CLAUDE-*.md
+
+# 홍보 영상 작업 파일
+promo/_work/
+promo/Claude outputs/
+promo/*.srt
