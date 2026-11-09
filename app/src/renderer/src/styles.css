@@ -1656,3 +1656,70 @@ body.resizing-x {
   background: var(--ok);
   box-shadow: 0 0 7px var(--ok);
 }
+
+/* 촘촘한 창 (매크로 편집): 글꼴·간격을 줄여 한 화면에 더 많은 행.
+   안에 들어 있는 체크섬 창(중첩 모달)에는 적용되지 않도록 자식 선택자로 범위를 좁힌다. */
+.modal.compact > .modal-head {
+  padding: 6px 12px;
+}
+.modal.compact > .modal-head h2 {
+  font-size: 13px;
+}
+.modal.compact > .modal-body {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.modal.compact > .modal-foot {
+  padding: 6px 10px;
+  gap: 6px;
+  font-size: 12px;
+}
+.modal.compact > .modal-body > :is(.list-toolbar, .table-scroll, .preview-bar) :is(input:not([type='checkbox']), select),
+.modal.compact > .modal-foot :is(input:not([type='checkbox']), select) {
+  padding: 2px 5px;
+}
+.modal.compact > .modal-body > :is(.list-toolbar, .table-scroll, .preview-bar) button,
+.modal.compact > .modal-foot button {
+  padding: 2px 8px;
+}
+.modal.compact > .modal-body > .list-toolbar {
+  padding-bottom: 4px;
+}
+.modal.compact .macro-table th {
+  padding: 3px 4px;
+  font-size: 10px;
+}
+.modal.compact .macro-table td {
+  padding: 1px 4px;
+}
+.modal.compact .macro-table .c-key {
+  width: 76px;
+}
+.modal.compact .macro-table .hotkey-input {
+  width: 72px;
+  font-size: 10px;
+}
+.modal.compact .macro-table .c-name {
+  width: 100px;
+}
+.modal.compact .macro-table .name-input {
+  width: 92px;
+}
+.modal.compact .macro-table .c-int {
+  width: 60px;
+}
+.modal.compact .macro-table .num-input.tiny {
+  width: 56px;
+}
+.modal.compact .macro-table button.cs-btn {
+  min-width: 36px;
+  padding: 1px 4px;
+}
+.modal.compact .macro-table .cs-chip {
+  font-size: 10px;
+  padding: 0 5px;
+}
+.modal.compact > .modal-body > .preview-bar {
+  margin: 6px -10px -8px;
+  padding: 4px 10px;
+}

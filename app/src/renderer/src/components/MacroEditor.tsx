@@ -224,7 +224,7 @@ export function MacroEditor(): JSX.Element {
   )
 
   return (
-    <Modal title={t('macro.editorTitle', { n: draft.length })} onClose={close} footer={footer} size="large">
+    <Modal title={t('macro.editorTitle', { n: draft.length })} onClose={close} footer={footer} size="large" className="compact">
       <div className="list-toolbar">
         <button onClick={() => insert(blankMacro())}>{t('list.add')}</button>
         <button disabled={!sel} onClick={() => sel && insert({ ...sel, id: uid(), hotkey: '' })}>

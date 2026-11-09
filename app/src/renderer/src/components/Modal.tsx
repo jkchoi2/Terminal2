@@ -12,6 +12,8 @@ interface Props {
   closeOnBackdrop?: boolean
   /** false: Esc로 닫히지 않음 (✕·버튼으로만 닫기) */
   closeOnEsc?: boolean
+  /** .modal에 덧붙일 클래스 (예: 'compact' = 촘촘한 글꼴·간격) */
+  className?: string
 }
 
 // Open modals, innermost last; Esc closes only the top one.
@@ -19,7 +21,7 @@ const stack: symbol[] = []
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v))
 
-export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true }: Props): JSX.Element {
+export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true, className }: Props): JSX.Element {
   const closeRef = useRef(onClose)
   closeRef.current = onClose
   const escRef = useRef(closeOnEsc)
@@ -71,7 +73,7 @@ export function Modal({ title, onClose, children, footer, size = 760, closeOnBac
 
   return (
     <div className="modal-backdrop" onMouseDown={closeOnBackdrop ? onClose : undefined}>
-      <div ref={boxRef} className={`modal${size === 'large' ? ' large' : ''}`} style={style} onMouseDown={(e) => e.stopPropagation()}>
+      <div ref={boxRef} className={`modal${size === 'large' ? ' large' : ''}${className ? ` ${className}` : ''}`} style={style} onMouseDown={(e) => e.stopPropagation()}>
         <header className="modal-head" onMouseDown={startDrag}>
           <h2>{title}</h2>
           <button className="icon-btn" onClick={onClose} aria-label={t('common.close')}>
