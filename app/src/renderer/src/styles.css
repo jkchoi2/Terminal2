@@ -1687,11 +1687,19 @@ body.resizing-x {
 }
 /* 체크박스 열(사용·Hex·CR·LF)과 CS 열은 좁게: 남는 폭은 모두 메시지 열로 */
 .modal.compact .macro-table .c-chk {
-  width: 30px;
+  width: 24px;
+  padding-left: 2px;
+  padding-right: 2px;
   text-align: center;
 }
 .modal.compact .macro-table td:has(> input[type='checkbox']) {
+  padding-left: 2px;
+  padding-right: 2px;
   text-align: center;
+}
+/* Bytes는 최대 세 자리 */
+.modal.compact .macro-table .c-bytes {
+  width: 32px;
 }
 .modal.compact .macro-table .c-cs {
   width: 44px;
