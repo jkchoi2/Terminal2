@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '@/lib/store'
-import { hotkeyFromEvent } from '@/lib/hotkey'
+import { hotkeyFromEvent, inDialog } from '@/lib/hotkey'
 import { ConnectionBar } from './components/ConnectionBar'
 import { ReceivePanel } from './components/ReceivePanel'
 import { Splitter } from './components/Splitter'
@@ -35,6 +35,7 @@ function useWindowTitle(): void {
 
 export function App(): JSX.Element {
   const modal = useStore((s) => s.modal)
+  const macroEditorOpen = useStore((s) => s.macroEditorOpen)
   const theme = useStore((s) => s.theme)
   // Re-mount on language change so every t() call re-renders.
   const language = useStore((s) => s.language)
@@ -50,7 +51,7 @@ export function App(): JSX.Element {
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       const s = useStore.getState()
-      if (s.modal) return
+      if (s.modal || inDialog(e)) return
       if (e.ctrlKey && e.key === 'Delete') {
         e.preventDefault()
         return s.clearLog()
@@ -74,7 +75,8 @@ export function App(): JSX.Element {
       <MacroBar />
       <SendPanel />
       <StatusBar />
-      {modal === 'macros' && <MacroEditor />}
+      {/* 모달리스 매크로 편집 창: 다른 창은 그 위에 뜬다 */}
+      {macroEditorOpen && <MacroEditor />}
       {modal === 'rr' && <RequestResponseEditor />}
       {modal === 'help' && <QuickHelp />}
       {modal === 'fileSend' && <FileSendDialog />}

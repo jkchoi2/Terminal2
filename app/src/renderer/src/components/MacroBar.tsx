@@ -20,12 +20,12 @@ function tooltip(m: Macro): string {
 
 export function MacroBar(): JSX.Element {
   const { macros, running, connected, macroPaneHeight, collapsed } = useStore(useShallow((s) => ({ macros: s.macros, running: s.running, connected: s.connected, macroPaneHeight: s.macroPaneHeight, collapsed: s.macroCollapsed })))
-  const { triggerMacro, toggleMacroLoop, stopAllMacros, setModal, toggleMacros } = useStore(
+  const { triggerMacro, toggleMacroLoop, stopAllMacros, setMacroEditorOpen, toggleMacros } = useStore(
     useShallow((s) => ({
       triggerMacro: s.triggerMacro,
       toggleMacroLoop: s.toggleMacroLoop,
       stopAllMacros: s.stopAllMacros,
-      setModal: s.setModal,
+      setMacroEditorOpen: s.setMacroEditorOpen,
       toggleMacros: s.toggleMacros
     }))
   )
@@ -39,7 +39,7 @@ export function MacroBar(): JSX.Element {
           {collapsed ? '▸' : '▾'}
         </button>
         <span className="panel-title">{t('macro.title')}</span>
-        <button onClick={() => setModal('macros')}>{t('macro.edit')}</button>
+        <button onClick={() => setMacroEditorOpen(true)}>{t('macro.edit')}</button>
         {anyRunning && (
           <button className="danger" onClick={stopAllMacros}>
             {t('macro.stopAll')}

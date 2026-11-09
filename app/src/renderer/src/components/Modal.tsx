@@ -14,6 +14,8 @@ interface Props {
   closeOnEsc?: boolean
   /** .modal에 덧붙일 클래스 (예: 'compact' = 촘촘한 글꼴·간격) */
   className?: string
+  /** 모달리스: 배경이 어둡지 않고, 창 밖 클릭은 메인 화면으로 전달 (✕·버튼으로만 닫힘) */
+  modeless?: boolean
   /** size='large'일 때 시작 크기(px). 없으면 창의 94% × 92% */
   initialSize?: { w: number; h: number }
   /** size='large' 창을 모서리로 끌어 크기를 바꾼 뒤 호출 (저장용) */
@@ -25,7 +27,7 @@ const stack: symbol[] = []
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v))
 
-export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true, className, initialSize, onResized }: Props): JSX.Element {
+export function Modal({ title, onClose, children, footer, size = 760, closeOnBackdrop = true, closeOnEsc = true, className, modeless = false, initialSize, onResized }: Props): JSX.Element {
   const closeRef = useRef(onClose)
   closeRef.current = onClose
   const escRef = useRef(closeOnEsc)
@@ -100,7 +102,7 @@ export function Modal({ title, onClose, children, footer, size = 760, closeOnBac
   }
 
   return (
-    <div className="modal-backdrop" onMouseDown={closeOnBackdrop ? onClose : undefined}>
+    <div className={`modal-backdrop${modeless ? ' modeless' : ''}`} onMouseDown={closeOnBackdrop && !modeless ? onClose : undefined}>
       <div ref={boxRef} className={`modal${size === 'large' ? ' large' : ''}${className ? ` ${className}` : ''}`} style={style} onMouseDown={(e) => e.stopPropagation()}>
         <header className="modal-head" onMouseDown={startDrag}>
           <h2>{title}</h2>

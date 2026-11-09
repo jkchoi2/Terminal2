@@ -127,7 +127,7 @@ const stripId = ({ id: _id, ...m }: Macro): Omit<Macro, 'id'> => m
 export function MacroEditor(): JSX.Element {
   const macros = useStore((s) => s.macros)
   const setMacros = useStore((s) => s.setMacros)
-  const setModal = useStore((s) => s.setModal)
+  const setMacroEditorOpen = useStore((s) => s.setMacroEditorOpen)
   const encoding = useStore((s) => s.encoding)
   const connected = useStore((s) => s.connected)
   const dialogSize = useDialogSize('macros', MACRO_DIALOG_SIZE)
@@ -136,7 +136,7 @@ export function MacroEditor(): JSX.Element {
   const [fileLink, setFileLink] = useState<FileLink | null>(useStore.getState().macroFile)
   const [selId, setSelId] = useState<number | undefined>(macros[0]?.id)
   const [csId, setCsId] = useState<number>()
-  const close = (): void => setModal(null)
+  const close = (): void => setMacroEditorOpen(false)
   const selIndex = draft.findIndex((m) => m.id === selId)
 
   const patch = (id: number, p: Partial<Macro>): void => setDraft((d) => d.map((m) => (m.id === id ? { ...m, ...p } : m)))
@@ -235,6 +235,8 @@ export function MacroEditor(): JSX.Element {
       footer={footer}
       size="large"
       className="compact"
+      modeless
+      closeOnEsc={false}
       {...dialogSize}
     >
       <div className="preview-bar">

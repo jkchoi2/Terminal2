@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore, type RxMode, type RxView } from '@/lib/store'
 import { asciiSegments, formatTime, hex2, parseHex, toDots, toHex } from '@/lib/hex'
 import { t } from '@/lib/i18n'
+import { inDialog } from '@/lib/hotkey'
 import type { Dir, FrameMode, FrameSpec, LogEntry } from '@/lib/types'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { Icon } from './Icon'
@@ -311,7 +312,7 @@ export function ReceivePanel(): JSX.Element {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (useStore.getState().modal) return
+      if (useStore.getState().modal || inDialog(e)) return
       if (e.ctrlKey && e.key.toLowerCase() === 'f') {
         e.preventDefault()
         openSearch()

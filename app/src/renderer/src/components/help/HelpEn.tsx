@@ -179,7 +179,8 @@ export function HelpEn(): JSX.Element {
 
       <Section id="macro" title="8. Macros">
         <p>
-          In the macro editor select a row, then use Add / Duplicate / Up / Down / Delete (Alt+↑/↓, Delete). Hex checkbox switches
+          The macro editor stays open while you use the main window (log, send, macro buttons) and closes only with ✕, Cancel
+          or OK. In the editor select a row, then use Add / Duplicate / Up / Down / Delete (Alt+↑/↓, Delete). Hex checkbox switches
           the message to HEX. Empty name = start of the message. Click the hotkey cell and press a key (F1–F12 alone, otherwise
           Ctrl/Alt combos). On the main screen a macro button (and its hotkey) always <b>sends once</b>; with interval &gt; 0 the
           button gets a <b>⟳</b> area on its right that starts repeating, and shows <b>■</b> to stop. <b>▶ Send</b> under the editor

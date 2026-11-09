@@ -29,7 +29,7 @@ export interface Lines {
   rts: boolean
 }
 
-export type ModalKind = null | 'macros' | 'rr' | 'help' | 'fileSend' | 'shortcut'
+export type ModalKind = null | 'rr' | 'help' | 'fileSend' | 'shortcut'
 
 /** Everything stored in configTerminal.json. */
 export interface Snapshot {
@@ -131,6 +131,8 @@ export interface UiState {
   rxCount: number
   txCount: number
   modal: ModalKind
+  /** 매크로 편집 창 (모달리스: 다른 창과 따로 열림) */
+  macroEditorOpen: boolean
   configPath: string
   /** Last received packet (chart sample) */
   lastRx: Uint8Array | null
@@ -142,6 +144,7 @@ export interface UiState {
   clearLog: () => void
   resetCounters: () => void
   setModal: (m: ModalKind) => void
+  setMacroEditorOpen: (open: boolean) => void
   setMacroPaneHeight: (h: number) => void
   setDialogSize: (key: string, size: { w: number; h: number }) => void
   toggleMacros: () => void

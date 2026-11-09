@@ -884,6 +884,14 @@ body.resizing {
 }
 
 /* ---------- modal ---------- */
+/* 모달리스 창: 배경 없이, 창 밖 클릭은 메인 화면으로 */
+.modal-backdrop.modeless {
+  background: transparent;
+  pointer-events: none;
+}
+.modal-backdrop.modeless > .modal {
+  pointer-events: auto;
+}
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1687,14 +1695,15 @@ body.resizing-x {
 }
 /* 체크박스 열(사용·Hex·CR·LF)과 CS 열은 좁게: 남는 폭은 모두 메시지 열로 */
 .modal.compact .macro-table .c-chk {
-  width: 24px;
-  padding-left: 2px;
-  padding-right: 2px;
+  width: 18px;
+  white-space: nowrap;
+  padding-left: 1px;
+  padding-right: 1px;
   text-align: center;
 }
 .modal.compact .macro-table td:has(> input[type='checkbox']) {
-  padding-left: 2px;
-  padding-right: 2px;
+  padding-left: 1px;
+  padding-right: 1px;
   text-align: center;
 }
 /* Bytes는 최대 세 자리 */

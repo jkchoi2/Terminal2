@@ -44,3 +44,8 @@ export function hotkeyError(k: string): string | undefined {
   if (!isF && !hasMod) return t('err.hotkeyPlain')
   return undefined
 }
+
+/** 키 입력이 대화 상자(모달리스 매크로 편집 창 포함) 안에서 일어났는지: 그러면 메인 화면 단축키를 쓰지 않는다. */
+export function inDialog(e: KeyboardEvent): boolean {
+  return e.target instanceof Element && !!e.target.closest('.modal')
+}
