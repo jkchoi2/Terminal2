@@ -28,7 +28,7 @@ export function HelpEn(): JSX.Element {
           <li>Pick a baud rate or type any value (custom). Non-standard values get an orange border.</li>
           <li>
             Port, baud rate, data bits, parity, stop bits and handshaking can be changed while connected: the port is reopened with
-            the new settings (periodic macros and the file log keep going). If it cannot be reopened, the connection is closed.
+            the new settings (periodic macros and the file log keep going; packets due during the brief reopen are skipped). If it cannot be reopened, the connection is closed.
           </li>
           <li>Set data bits / parity / stop bits / handshaking, then <b>Connect</b>. The button turns into a green <b>Disconnect</b>.</li>
         </ol>

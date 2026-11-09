@@ -62,8 +62,18 @@ export function createMacroSlice(set: SetState, get: GetState): MacroState {
     },
 
     setMacros: (macros, file) => {
-      get().stopAllMacros()
-      set(file === undefined ? { macros } : { macros, macroFile: file })
+      // 내용이 그대로인 매크로의 주기 전송은 이어 가고, 바뀌거나 지워진 것만 멈춘다.
+      const same = (a: Macro, b: Macro | undefined): boolean => !!b && JSON.stringify(a) === JSON.stringify(b)
+      const old = get().macros
+      const running = { ...get().running }
+      for (const id of [...timers.keys()]) {
+        const before = old.find((m) => m.id === id)
+        if (!before || !same(before, macros.find((m) => m.id === id))) {
+          stopMacro(id)
+          delete running[id]
+        }
+      }
+      set(file === undefined ? { macros, running } : { macros, running, macroFile: file })
     },
     setRR: (rrEnabled, rules, file) => set(file === undefined ? { rrEnabled, rules } : { rrEnabled, rules, rrFile: file }),
     resetHits: () => set({ hits: {} })

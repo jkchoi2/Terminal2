@@ -28,7 +28,7 @@ export function HelpKo(): JSX.Element {
           <li>Baud rate는 목록에서 고르거나 숫자를 직접 입력(Custom). 표준이 아닌 값은 주황 테두리로 표시됩니다.</li>
           <li>
             연결 중에도 Port·Baud rate·Data bits·Parity·Stop bits·Handshaking을 바꿀 수 있습니다. 바꾸면 포트를 새 설정으로 바로
-            다시 열고(주기 매크로·파일 로그는 계속), 열기에 실패하면 연결이 끊깁니다.
+            다시 열고(주기 매크로·파일 로그는 계속, 다시 여는 짧은 동안의 전송은 건너뜀), 열기에 실패하면 연결이 끊깁니다.
           </li>
           <li>Data bits / Parity / Stop bits / Handshaking 설정 후 <b>Connect</b>. 연결되면 버튼이 초록색 <b>Disconnect</b>로 바뀝니다.</li>
         </ol>

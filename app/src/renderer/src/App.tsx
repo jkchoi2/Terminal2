@@ -68,6 +68,10 @@ export function App(): JSX.Element {
   }, [])
 
   return (
+    <>
+      {/* 모달리스 매크로 편집 창: 언어를 바꿔도 다시 만들어지지 않게(편집 내용 유지) .app 밖에 둔다.
+          DOM에서 .app보다 앞이라 .app 안의 다른 창(도움말 등)은 그 위에 뜬다. */}
+      {macroEditorOpen && <MacroEditor />}
     <div className="app" key={language} data-conn={connKind}>
       <ConnectionBar />
       <ReceivePanel />
@@ -75,12 +79,11 @@ export function App(): JSX.Element {
       <MacroBar />
       <SendPanel />
       <StatusBar />
-      {/* 모달리스 매크로 편집 창: 다른 창은 그 위에 뜬다 */}
-      {macroEditorOpen && <MacroEditor />}
       {modal === 'rr' && <RequestResponseEditor />}
       {modal === 'help' && <QuickHelp />}
       {modal === 'fileSend' && <FileSendDialog />}
       {modal === 'shortcut' && <ShortcutDialog />}
     </div>
+    </>
   )
 }

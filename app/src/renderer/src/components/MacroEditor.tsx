@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Modal } from './Modal'
 import { BytePreview, ChecksumFields } from './PacketChecksumEditor'
 import { blankMacro, uid, useStore } from '@/lib/store'
@@ -130,6 +130,8 @@ export function MacroEditor(): JSX.Element {
   const setMacroEditorOpen = useStore((s) => s.setMacroEditorOpen)
   const encoding = useStore((s) => s.encoding)
   const connected = useStore((s) => s.connected)
+  // .app 밖에 있어 언어가 바뀌어도 다시 만들어지지 않으므로, 구독해서 글자만 다시 그린다.
+  useStore((s) => s.language)
   const dialogSize = useDialogSize('macros', MACRO_DIALOG_SIZE)
   const [testResult, setTestResult] = useState<{ ok: boolean; text: string }>()
   const [draft, setDraft] = useState<Macro[]>(() => macros.map((m) => ({ ...m })))
@@ -138,6 +140,9 @@ export function MacroEditor(): JSX.Element {
   const [csId, setCsId] = useState<number>()
   const close = (): void => setMacroEditorOpen(false)
   const selIndex = draft.findIndex((m) => m.id === selId)
+  // 다른 행을 고르거나 내용을 고치면 이전 테스트 결과는 지운다.
+  const selRow = draft[selIndex]
+  useEffect(() => setTestResult(undefined), [selRow])
 
   const patch = (id: number, p: Partial<Macro>): void => setDraft((d) => d.map((m) => (m.id === id ? { ...m, ...p } : m)))
 

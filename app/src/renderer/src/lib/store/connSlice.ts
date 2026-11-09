@@ -20,6 +20,11 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
     return `${CONN_LABEL[s.connKind]} ${describeConn(s.connKind, s.net, s.config)}`
   }
 
+  /** 연결 중 시리얼 설정을 바꿔 포트를 다시 여는 중 (이때 보내는 데이터는 조용히 버린다) */
+  let reopening = false
+  /** LOOPBACK 메아리가 다른 연결로 새지 않게: 다시 열거나 닫을 때마다 바뀐다 */
+  let session = 0
+
   const logTx = (bytes: Uint8Array, label?: string): void => queueLog(entry('tx', bytes, label), 0, bytes.length)
 
   /** Writes to the port (or loopback) and logs on success. to: TCP Server에서 한 클라이언트에게만 보낼 때 */
@@ -28,9 +33,11 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
       pushSys(t('log.notConnected'))
       return false
     }
+    if (reopening) return false
     if (isLoopback()) {
       logTx(bytes, label)
-      if (echo) setTimeout(() => get().connected && receive(bytes, Date.now()), 20)
+      const mine = session
+      if (echo) setTimeout(() => get().connected && mine === session && receive(bytes, Date.now()), 20)
       return true
     }
     if (get().connKind === 'tcp-server' && get().peers.length === 0) {
@@ -66,6 +73,7 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
   }
 
   const markClosed = (reason?: string): void => {
+    session++
     get().stopAllMacros()
     set((s) => ({ connected: false, peers: [], sendTarget: null, lines: { ...s.lines, cts: false, dsr: false, cd: false } }))
     if (reason) pushSys(reason)
@@ -120,26 +128,36 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
   /**
    * 연결 중 시리얼 설정(포트·속도·형식)을 바꾸면 끊지 않고 새 설정으로 다시 연다.
    * markClosed를 거치지 않으므로 주기 매크로와 파일 로그는 그대로 이어진다.
+   * 다시 여는 동안 설정이 또 바뀌면, 마지막 설정이 적용될 때까지 되풀이한다.
    */
   const reopenSerial = async (prev: SerialConfig): Promise<void> => {
-    const { config, net, frame } = get()
-    const lines = { dtr: get().dtr, rts: get().rts }
     set({ busy: true })
+    reopening = true
     try {
-      if (config.port === LOOPBACK_PORT) {
-        if (prev.port !== LOOPBACK_PORT) await window.api.conn.close().catch(() => undefined)
-        set((s) => ({ lines: { ...s.lines, ...lines, cts: true, dsr: true } }))
-        pushSys(t('log.openedLoopback'))
-      } else {
-        // ConnectionManager.open이 이전 포트를 먼저 닫는다.
-        await window.api.conn.open(openRequest('serial', net, config, lines), frame)
-        set((s) => ({ lines: { ...s.lines, ...lines } }))
-        const format = `${config.dataBits}${config.parity[0].toUpperCase()}${config.stopBits}`
-        pushSys(t('log.reconfigured', { port: config.port, baud: config.baudRate, format }))
+      for (;;) {
+        const { config, net, frame } = get()
+        const lines = { dtr: get().dtr, rts: get().rts }
+        session++
+        try {
+          if (config.port === LOOPBACK_PORT) {
+            if (prev.port !== LOOPBACK_PORT) await window.api.conn.close().catch(() => undefined)
+            set((s) => ({ lines: { ...s.lines, ...lines, cts: true, dsr: true } }))
+          } else {
+            // ConnectionManager.open이 이전 포트(또는 LOOPBACK이 아니던 포트)를 먼저 닫는다.
+            await window.api.conn.open(openRequest('serial', net, config, lines), frame)
+            set((s) => ({ lines: { ...s.lines, ...lines } }))
+          }
+          const format = `${config.dataBits}${config.parity[0].toUpperCase()}${config.stopBits}`
+          pushSys(t('log.reconfigured', { port: config.port, baud: config.baudRate, format }))
+        } catch (e) {
+          markClosed(t('log.openError', { port: config.port, msg: errMsg(e) }))
+          return
+        }
+        if (get().config === config || !get().connected) return
+        prev = config
       }
-    } catch (e) {
-      markClosed(t('log.openError', { port: config.port, msg: errMsg(e) }))
     } finally {
+      reopening = false
       set({ busy: false })
     }
   }

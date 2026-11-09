@@ -52,4 +52,17 @@ describe('macroSlice', () => {
     expect(sent()).toBe(0)
     expect(state.running[id]).toBeFalsy()
   })
+
+  it('setMacros: 그대로인 매크로의 반복은 이어 가고, 바뀐 것은 멈춤', async () => {
+    const { state, sent, id } = setup(100)
+    state.toggleMacroLoop(id)
+    state.setMacros(state.macros.map((m) => ({ ...m }))) // 편집 창 확인, 내용 그대로
+    expect(state.running[id]).toBe(true)
+    await vi.advanceTimersByTimeAsync(150)
+    expect(sent()).toBe(2)
+    state.setMacros(state.macros.map((m) => ({ ...m, data: 'B' })))
+    expect(state.running[id]).toBeFalsy()
+    await vi.advanceTimersByTimeAsync(500)
+    expect(sent()).toBe(2)
+  })
 })
