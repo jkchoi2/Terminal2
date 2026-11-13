@@ -10,7 +10,7 @@ export function HelpEn(): JSX.Element {
             ['Top', 'Connect split button (▾ = connection type Serial / TCP Client / TCP Server / UDP, desktop shortcut), fields for that type, signal lines (Serial) or clients (TCP Server), Help, Quit'],
             ['Receive', 'Traffic log: ASCII / HEX / HEX+ASCII, Time, Len, CR/LF, TX, packet framing, find, copy all, ● LOG (file log), R/R, chart'],
             ['Macros', 'Send stored messages with one click. ▾/▸ hides or shows the pane; drag the border above to resize'],
-            ['Send', 'Type and send one line (ASCII/HEX, CR/LF appended when checked). ↑/↓ for history. ▾ next to Send = send a file'],
+            ['Send', 'Type and send one line (ASCII/HEX, CR/LF appended when checked, ⇄ swaps CR LF ↔ LF CR). ↑/↓ for history. ▾ next to Send = send a file'],
             ['Status bar', 'Connection, summary, Rx/Tx counters with activity LEDs, config file path, encoding, language, ⚡ keep speed when minimized, theme']
           ]}
         />

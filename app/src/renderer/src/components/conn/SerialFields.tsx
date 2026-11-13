@@ -136,7 +136,7 @@ export function SerialFields({ locked }: { locked: boolean }): JSX.Element {
         <BaudCombo disabled={locked} />
       </div>
 
-      <label className="field">
+      <label className="field narrow">
         <span>Data bits</span>
         <select
           value={config.dataBits}
@@ -149,7 +149,7 @@ export function SerialFields({ locked }: { locked: boolean }): JSX.Element {
         </select>
       </label>
 
-      <label className="field">
+      <label className="field narrow parity">
         <span>Parity</span>
         <select value={config.parity} disabled={locked} onChange={(e) => setConfig({ parity: e.target.value as Parity })}>
           {PARITY.map((p) => (
@@ -158,7 +158,7 @@ export function SerialFields({ locked }: { locked: boolean }): JSX.Element {
         </select>
       </label>
 
-      <label className="field">
+      <label className="field narrow">
         <span>Stop bits</span>
         <select
           value={config.stopBits}

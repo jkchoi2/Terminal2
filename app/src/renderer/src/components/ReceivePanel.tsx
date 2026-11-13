@@ -4,7 +4,8 @@ import { useStore, type RxMode, type RxView } from '@/lib/store'
 import { asciiSegments, formatTime, hex2, parseHex, toDots, toHex } from '@/lib/hex'
 import { t } from '@/lib/i18n'
 import { inDialog } from '@/lib/hotkey'
-import type { Dir, FrameMode, FrameSpec, LogEntry } from '@/lib/types'
+import type { FrameMode, FrameSpec, LogEntry } from '@/lib/types'
+import { layout, type Line } from '@/lib/rxLayout'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { Icon } from './Icon'
 import { LogButton } from './LogButton'
@@ -13,61 +14,6 @@ import { LogButton } from './LogButton'
 const LINE_H = 20
 /** Extra lines rendered above/below the visible area. */
 const OVERSCAN = 30
-/** A line without a break is split after this many bytes. */
-const MAX_LINE_BYTES = 2048
-
-interface Line {
-  key: number
-  time: number
-  dir: Dir
-  bytes: number[]
-  label?: string
-  text?: string
-}
-
-/** Printable ASCII, TAB/CR/LF or multi-byte text bytes only. */
-function isText(bytes: Uint8Array): boolean {
-  return bytes.every((b) => (b >= 0x20 && b !== 0x7f) || b === 0x09 || b === 0x0a || b === 0x0d)
-}
-
-/**
- * Lays out log entries into display lines.
- * - TX always starts its own line; a direction change also breaks the line.
- * - ASCII view breaks after an LF byte in text packets.
- * - HEX views, or the CR / LF options in ASCII view, break the line after each packet.
- * - Otherwise packets flow on the same line (like a raw terminal).
- */
-function layout(log: LogEntry[], view: RxView): Line[] {
-  const lines: Line[] = []
-  const st: { cur: Line | null } = { cur: null }
-  const open = (e: LogEntry): Line => {
-    if (!st.cur) {
-      st.cur = { key: e.id * 1000 + lines.length, time: e.time, dir: e.dir, bytes: [], label: e.text }
-      lines.push(st.cur)
-    }
-    return st.cur
-  }
-  for (const e of log) {
-    if (e.dir === 'tx' && !view.showTx) continue
-    if (e.dir === 'sys') {
-      st.cur = null
-      lines.push({ key: e.id * 1000, time: e.time, dir: 'sys', bytes: [], text: e.text })
-      continue
-    }
-    // 보낸 쪽(TCP Server/UDP의 IP:port)이 바뀌어도 줄을 바꾼다.
-    if (e.dir === 'tx' || st.cur?.dir !== e.dir || st.cur.label !== e.text) st.cur = null
-    // Binary packets may contain 0x0A as data; only text breaks on LF.
-    const breakOnLf = view.mode === 'ascii' && isText(e.bytes)
-    for (const b of e.bytes) {
-      const line = open(e)
-      line.bytes.push(b)
-      if ((b === 0x0a && breakOnLf) || line.bytes.length >= MAX_LINE_BYTES) st.cur = null
-    }
-    // HEX views always show one packet per line; CR/LF options only apply to ASCII text.
-    if (e.dir === 'tx' || view.mode !== 'ascii' || view.addCR || view.addLF) st.cur = null
-  }
-  return lines
-}
 
 function prefix(l: Line, view: RxView): string {
   let p = view.showTime ? `[${formatTime(l.time)}] ` : ''

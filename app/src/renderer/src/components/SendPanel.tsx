@@ -15,15 +15,16 @@ export function SendPanel(): JSX.Element {
   const [text, setText] = useState('TEST1234')
   const [cr, setCr] = useState(false)
   const [lf, setLf] = useState(false)
+  const [lfFirst, setLfFirst] = useState(false)
   const [history, setHistory] = useState<string[]>([])
   const [histIdx, setHistIdx] = useState(-1)
   const [err, setErr] = useState<string>()
 
   // encoding is a dependency because ASCII text is encoded with it.
-  const preview = useMemo(() => buildPayload(mode, text, cr, lf), [mode, text, cr, lf, encoding])
+  const preview = useMemo(() => buildPayload(mode, text, cr, lf, lfFirst), [mode, text, cr, lf, lfFirst, encoding])
 
   const send = (): void => {
-    const e = sendText(mode, text, cr, lf)
+    const e = sendText(mode, text, cr, lf, lfFirst)
     setErr(e)
     if (e) return
     setHistory((h) => [text, ...h.filter((x) => x !== text)].slice(0, 50))
@@ -46,11 +47,22 @@ export function SendPanel(): JSX.Element {
   }
 
   const invalid = !!preview.error
+  const crBox = (
+    <label className="check" title={t('send.crTip')}>
+      <input type="checkbox" checked={cr} onChange={(e) => setCr(e.target.checked)} />
+      CR
+    </label>
+  )
+  const lfBox = (
+    <label className="check" title={t('send.lfTip')}>
+      <input type="checkbox" checked={lf} onChange={(e) => setLf(e.target.checked)} />
+      LF
+    </label>
+  )
 
   return (
     <section className="panel send">
       <div className="toolbar">
-        <span className="panel-title">{t('send.title')}</span>
         <div className="segmented">
           <button className={mode === 'ascii' ? 'active' : ''} onClick={() => setMode('ascii')}>
             ASCII
@@ -70,14 +82,14 @@ export function SendPanel(): JSX.Element {
           }}
           onKeyDown={onKeyDown}
         />
-        <label className="check" title={t('send.crTip')}>
-          <input type="checkbox" checked={cr} onChange={(e) => setCr(e.target.checked)} />
-          CR
-        </label>
-        <label className="check" title={t('send.lfTip')}>
-          <input type="checkbox" checked={lf} onChange={(e) => setLf(e.target.checked)} />
-          LF
-        </label>
+        {/* 화면 순서 = 보내는 순서 (⇄로 CR LF ↔ LF CR) */}
+        <span className="eol-group">
+          {lfFirst ? lfBox : crBox}
+          <button className="eol-swap" onClick={() => setLfFirst((v) => !v)} title={t('send.eolSwapTip')}>
+            ⇄
+          </button>
+          {lfFirst ? crBox : lfBox}
+        </span>
         {/* 보내기 ⏎ | ▾ (누르면 바로 파일 전송 설정 창) */}
         <div className="split-btn">
           <button className="primary" onClick={send} disabled={invalid || !connected}>

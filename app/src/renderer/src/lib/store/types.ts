@@ -105,7 +105,7 @@ export interface ConnState {
   toggleLine: (k: 'dtr' | 'rts') => void
   setFrame: (patch: Partial<FrameSpec>) => void
   send: (bytes: Uint8Array, label?: string) => Promise<boolean>
-  sendText: (mode: DataMode, text: string, cr: boolean, lf: boolean) => string | undefined
+  sendText: (mode: DataMode, text: string, cr: boolean, lf: boolean, lfFirst?: boolean) => string | undefined
   /** 연결 이벤트 입구 (initApp에서 호출) */
   handleFrame: (bytes: Uint8Array, time: number, peer?: string) => void
   handleEvent: (e: ConnEvent) => void

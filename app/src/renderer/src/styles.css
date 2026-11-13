@@ -249,7 +249,7 @@ input[type='checkbox'] {
 .conn-bar {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 10px;
   flex-wrap: wrap;
 }
@@ -288,10 +288,17 @@ input[type='checkbox'] {
   color: var(--muted);
 }
 .field select {
-  min-width: 64px;
+  min-width: 48px;
+}
+/* Data bits / Parity / Stop bits: 값이 짧아 좁게 */
+.field.narrow select {
+  width: 52px;
+}
+.field.narrow.parity select {
+  width: 64px;
 }
 .baud-input {
-  width: 90px;
+  width: 72px;
 }
 .signals {
   display: flex;
@@ -445,7 +452,7 @@ input[type='checkbox'] {
   display: flex;
 }
 .combo .baud-input {
-  width: 100px;
+  width: 72px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
@@ -501,7 +508,12 @@ input.warn {
 }
 .receive .toolbar {
   border-bottom: 1px solid var(--border);
-  gap: 6px;
+  gap: 5px;
+}
+/* Time, Len, CR, LF, TX, Auto scroll: 작은 글씨로 툴바가 늦게 접히게 */
+.receive .toolbar .check {
+  font-size: 11px;
+  gap: 3px;
 }
 .receive .toolbar .segmented button {
   padding: 4px 8px;
@@ -731,6 +743,20 @@ body.resizing {
 }
 
 /* ---------- send ---------- */
+.eol-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+/* 송신 줄: 제목 없이 앞 여백만 */
+.send .toolbar {
+  padding-left: 14px;
+}
+.eol-swap {
+  padding: 1px 4px;
+  font-size: 11px;
+  line-height: 1.2;
+}
 .send-input {
   flex: 1;
   min-width: 200px;
@@ -1430,7 +1456,7 @@ body.resizing-x {
 
 /* connection bar */
 .port-select {
-  width: 230px;
+  width: 200px;
 }
 .app-btns {
   flex-direction: column;

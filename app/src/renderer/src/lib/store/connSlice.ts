@@ -238,8 +238,8 @@ export function createConnSlice(set: SetState, get: GetState): ConnState {
 
     send: (bytes, label) => transmit(bytes, label),
 
-    sendText: (mode, text, cr, lf) => {
-      const p = buildPayload(mode, text, cr, lf)
+    sendText: (mode, text, cr, lf, lfFirst) => {
+      const p = buildPayload(mode, text, cr, lf, lfFirst)
       if (p.error) return p.error
       if (p.bytes.length === 0) return t('err.noData')
       void get().send(p.bytes)

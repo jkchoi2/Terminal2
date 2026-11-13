@@ -92,10 +92,13 @@ export function parseTagBytes(bytes: Uint8Array): Uint8Array {
   return Uint8Array.from(out)
 }
 
-export function buildPayload(mode: DataMode, text: string, cr: boolean, lf: boolean): ParseResult {
+/** `lfFirst`: append LF before CR (0A 0D) instead of CR LF. */
+export function buildPayload(mode: DataMode, text: string, cr: boolean, lf: boolean, lfFirst = false): ParseResult {
   const body = mode === 'hex' ? parseHex(text) : { bytes: encodeText(text) }
   if (body.error) return body
-  const tail = [...(cr ? [0x0d] : []), ...(lf ? [0x0a] : [])]
+  const crB = cr ? [0x0d] : []
+  const lfB = lf ? [0x0a] : []
+  const tail = lfFirst ? [...lfB, ...crB] : [...crB, ...lfB]
   return { bytes: Uint8Array.from([...body.bytes, ...tail]) }
 }
 

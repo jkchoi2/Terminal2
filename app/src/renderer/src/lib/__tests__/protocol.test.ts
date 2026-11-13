@@ -47,6 +47,10 @@ describe('hex', () => {
   it('ASCII 태그와 CR/LF', () => {
     expect(toHex(buildPayload('ascii', '<STX>A', true, true).bytes)).toBe('02 41 0D 0A')
   })
+  it('LF CR 순서로 붙이기', () => {
+    expect(toHex(buildPayload('ascii', 'A', true, true, true).bytes)).toBe('41 0A 0D')
+    expect(toHex(buildPayload('ascii', 'A', false, true, true).bytes)).toBe('41 0A')
+  })
 })
 
 describe('buildPacket', () => {

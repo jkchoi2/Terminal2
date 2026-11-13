@@ -4,14 +4,12 @@ import type { ChartConfig } from '../chartTypes'
 import type { ChartMsg } from '../chartMsg'
 import { makeExtractor, type Extractor } from '../extract'
 import { sampleText } from '../logFormat'
-import { t } from '../i18n'
-import { pending, pushSys, scheduleFlush } from './logQueue'
+import { pending, scheduleFlush } from './logQueue'
 import type { State } from './types'
 
 let extractorFor: { cfg: ChartConfig; ex: Extractor } | null = null
 let chartReady = false
 let pendingSample: ChartMsg | null = null
-const alarmState = new Map<number, 'lo' | 'hi' | null>()
 
 function activeChart(s: { charts: ChartConfig[]; activeChartId: number }): ChartConfig | undefined {
   return s.charts.find((c) => c.id === s.activeChartId) ?? s.charts[0]
@@ -20,30 +18,23 @@ function activeChart(s: { charts: ChartConfig[]; activeChartId: number }): Chart
 function extractorOf(cfg: ChartConfig): Extractor {
   if (extractorFor?.cfg !== cfg) {
     extractorFor = { cfg, ex: makeExtractor(cfg) }
-    alarmState.clear()
   }
   return extractorFor.ex
 }
 
-/** Extracts chart values from a received packet; logs a warning when a value enters an alarm range. */
+/**
+ * Extracts chart values from a received packet. 차트 창이 열려 있을 때(ready 이후)만 추출한다.
+ * 닫혀 있으면 보낼 곳이 없어 값이 버려지므로 추출·전송 부하를 아낀다.
+ * 경고 범위는 차트 창(빨간 점·카드)에만 표시하고 수신창에는 남기지 않는다.
+ */
 export function chartPacket(s: State, frame: Uint8Array, time: number): void {
-  if (!s.chartCollecting) return
+  if (!s.chartCollecting || !chartReady) return
   const cfg = activeChart(s)
   if (!cfg) return
   const values = extractorOf(cfg).run(frame)
   if (!values) return
   pending.points.push({ chartId: cfg.id, t: time, values })
   scheduleFlush()
-  cfg.fields.forEach((f, i) => {
-    const v = values[i]
-    if (v === null || !f.enabled) return
-    const state = f.alarmHi !== null && v > f.alarmHi ? 'hi' : f.alarmLo !== null && v < f.alarmLo ? 'lo' : null
-    if (state && alarmState.get(f.id) !== state) {
-      const limit = state === 'hi' ? f.alarmHi : f.alarmLo
-      pushSys(t('chart.alarmLog', { name: f.name, value: v, op: state === 'hi' ? '>' : '<', limit: limit ?? '' }))
-    }
-    alarmState.set(f.id, state)
-  })
 }
 
 /** 차트 창에 샘플 패킷을 보낸다 (창이 아직 로딩 중이면 'ready' 뒤에 전달). */
@@ -79,6 +70,7 @@ export function wireChart(store: StoreApi<State>): void {
         break
       case 'closed':
         chartReady = false
+        pending.points = []
         break
       case 'setCharts':
         store.setState({ charts: msg.charts, activeChartId: msg.activeId, chartsFile: msg.chartsFile, lastDir: msg.lastDir })

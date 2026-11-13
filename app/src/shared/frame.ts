@@ -116,8 +116,14 @@ export class Framer {
 
   private splitTerminator(): void {
     const term = TERM[this.spec.terminator]
+    // CR/LF 끝문자 뒤에 이미 와 있는 CR/LF(LF CR, CR LF …)는 같은 패킷에 넣는다. 아직 안 온 바이트는 기다리지 않는다.
+    const eol = this.spec.terminator !== 'etx'
     let i
-    while ((i = this.buf.view().indexOf(term)) >= 0) this.take(i + 1)
+    while ((i = this.buf.view().indexOf(term)) >= 0) {
+      let n = i + 1
+      if (eol) while (n < this.buf.length && (this.buf.at(n) === 0x0a || this.buf.at(n) === 0x0d)) n++
+      this.take(n)
+    }
   }
 
   private splitLength(): void {
